@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.view;
@@ -131,7 +131,7 @@ public class DrumView64 extends AbstractDrumView64<PushControlSurface, PushConfi
             // If the instrument of the pad was selected for editing, try to select it again
             if (isNested)
             {
-                IDrumPad selectedItem = cdDrumPadBank.getItem (playedPad % pageSize);
+                final IDrumPad selectedItem = cdDrumPadBank.getItem (playedPad % pageSize);
                 if (selectedItem != null)
                     selectedItem.enter ();
             }

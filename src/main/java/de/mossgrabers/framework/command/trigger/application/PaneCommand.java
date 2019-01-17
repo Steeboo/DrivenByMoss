@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.trigger.application;
@@ -25,14 +25,14 @@ public class PaneCommand<S extends IControlSurface<C>, C extends Configuration> 
     /** The available panels. */
     public enum Panels
     {
-    /** Note editor. */
-    NOTE,
-    /** Automation editor. */
-    AUTOMATION,
-    /** Toggle device pane. */
-    DEVICE,
-    /** Mixer. */
-    MIXER
+        /** Note editor. */
+        NOTE,
+        /** Automation editor. */
+        AUTOMATION,
+        /** Toggle device pane. */
+        DEVICE,
+        /** Mixer. */
+        MIXER
     }
 
     private Panels panel;

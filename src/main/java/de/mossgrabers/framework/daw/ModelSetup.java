@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.daw;
@@ -21,6 +21,7 @@ public class ModelSetup
     private int     numFilterColumnEntries = 16;
     private int     numResults             = 16;
     private boolean hasFlatTrackList       = true;
+    private boolean hasFullFlatTrackList   = false;
     private int     numMarkers             = 0;
 
 
@@ -250,6 +251,29 @@ public class ModelSetup
     public void setHasFlatTrackList (final boolean hasFlatTrackList)
     {
         this.hasFlatTrackList = hasFlatTrackList;
+    }
+
+
+    /**
+     * Get if the track navigation should include effect and master tracks if flat.
+     *
+     * @return True if the track navigation should include effect and master tracks if flat
+     */
+    public boolean hasFullFlatTrackList ()
+    {
+        return this.hasFullFlatTrackList;
+    }
+
+
+    /**
+     * Set if the track navigation should include effect and master tracks if flat.
+     *
+     * @param hasFullFlatTrackList True if the track navigation should include effect and master
+     *            tracks if flat
+     */
+    public void setHasFullFlatTrackList (final boolean hasFullFlatTrackList)
+    {
+        this.hasFullFlatTrackList = hasFullFlatTrackList;
     }
 
 

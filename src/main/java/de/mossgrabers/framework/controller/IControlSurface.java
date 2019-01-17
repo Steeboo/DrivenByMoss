@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller;
@@ -459,6 +459,12 @@ public interface IControlSurface<C extends Configuration>
      * @param button The button
      */
     void clearButtonCache (int button);
+
+
+    /**
+     * Clear the cached lighting state of all buttons.
+     */
+    void clearButtonCache ();
 
 
     /**

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.scale;
@@ -14,10 +14,10 @@ public class ScaleGrid
     /** Orientation of the layout. */
     public enum Orientation
     {
-    /** Lower notes are on the bottom, higher notes on the top. */
-    ORIENT_UP,
-    /** Lower notes are on the left, higher notes on the right. */
-    ORIENT_RIGHT
+        /** Lower notes are on the bottom, higher notes on the top. */
+        ORIENT_UP,
+        /** Lower notes are on the left, higher notes on the right. */
+        ORIENT_RIGHT
     }
 
     private final Scale  scale;

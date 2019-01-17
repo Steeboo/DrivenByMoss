@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.maschine.mikro.mk3.command.trigger;
@@ -66,7 +66,7 @@ public class VolumePanSendCommand extends AbstractTriggerCommand<MaschineMikroMk
             return Modes.MODE_VOLUME;
 
         // Move up, again if outside range return Volume
-        int newMode = currentMode.intValue () + 1;
+        final int newMode = currentMode.intValue () + 1;
         if (newMode > Modes.MODE_SEND8.intValue ())
             return Modes.MODE_VOLUME;
 

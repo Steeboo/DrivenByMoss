@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.sl;
@@ -295,9 +295,10 @@ public class SLControllerSetup extends AbstractControllerSetup<SLControlSurface,
     {
         // Initialise 2nd display
         final SLControlSurface surface = this.getSurface ();
-        surface.getModeManager ().getMode (Modes.MODE_VOLUME).updateDisplay ();
+        final ModeManager modeManager = surface.getModeManager ();
+        modeManager.getMode (Modes.MODE_VOLUME).updateDisplay ();
         surface.getViewManager ().setActiveView (Views.VIEW_CONTROL);
-        surface.getModeManager ().setActiveMode (Modes.MODE_TRACK);
+        modeManager.setActiveMode (Modes.MODE_TRACK);
     }
 
 

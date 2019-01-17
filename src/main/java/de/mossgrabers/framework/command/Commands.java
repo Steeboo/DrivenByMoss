@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command;
@@ -230,6 +230,8 @@ public interface Commands
 
     /** Button to toggle the repeat command. */
     Integer COMMAND_REPEAT                   = Integer.valueOf (102);
+    /** Button to redo a command. */
+    Integer COMMAND_REDO                     = Integer.valueOf (103);
 
     /** The automation read command. */
     Integer COMMAND_AUTOMATION_READ          = Integer.valueOf (110);

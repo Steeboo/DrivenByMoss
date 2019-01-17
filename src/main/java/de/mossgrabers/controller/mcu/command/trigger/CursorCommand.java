@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mcu.command.trigger;
@@ -21,14 +21,14 @@ public class CursorCommand extends AbstractTriggerCommand<MCUControlSurface, MCU
     /** The direction of the cursor. */
     public enum Direction
     {
-    /** Move left. */
-    LEFT,
-    /** Move right. */
-    RIGHT,
-    /** Move up. */
-    UP,
-    /** Move down. */
-    DOWN
+        /** Move left. */
+        LEFT,
+        /** Move right. */
+        RIGHT,
+        /** Move up. */
+        UP,
+        /** Move down. */
+        DOWN
     }
 
     protected Direction        direction;

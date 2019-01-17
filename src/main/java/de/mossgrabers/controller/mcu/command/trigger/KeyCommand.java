@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mcu.command.trigger;
@@ -23,10 +23,10 @@ public class KeyCommand extends AbstractTriggerCommand<MCUControlSurface, MCUCon
     /** The direction of the cursor. */
     public enum Key
     {
-    /** The enter key. */
-    ENTER,
-    /** The escape key. */
-    ESCAPE
+        /** The enter key. */
+        ENTER,
+        /** The escape key. */
+        ESCAPE
     }
 
     protected Key key;

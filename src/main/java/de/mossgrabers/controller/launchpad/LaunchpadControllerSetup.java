@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.launchpad;
@@ -26,14 +26,10 @@ import de.mossgrabers.controller.launchpad.controller.LaunchpadColors;
 import de.mossgrabers.controller.launchpad.controller.LaunchpadControlSurface;
 import de.mossgrabers.controller.launchpad.controller.LaunchpadScales;
 import de.mossgrabers.controller.launchpad.mode.Modes;
-import de.mossgrabers.controller.launchpad.mode.MuteMode;
-import de.mossgrabers.controller.launchpad.mode.PanMode;
 import de.mossgrabers.controller.launchpad.mode.RecArmMode;
 import de.mossgrabers.controller.launchpad.mode.SendMode;
-import de.mossgrabers.controller.launchpad.mode.SoloMode;
 import de.mossgrabers.controller.launchpad.mode.StopClipMode;
 import de.mossgrabers.controller.launchpad.mode.TrackMode;
-import de.mossgrabers.controller.launchpad.mode.VolumeMode;
 import de.mossgrabers.controller.launchpad.view.BrowserView;
 import de.mossgrabers.controller.launchpad.view.DeviceView;
 import de.mossgrabers.controller.launchpad.view.DrumView;
@@ -79,6 +75,10 @@ import de.mossgrabers.framework.daw.midi.IMidiAccess;
 import de.mossgrabers.framework.daw.midi.IMidiInput;
 import de.mossgrabers.framework.daw.midi.IMidiOutput;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.track.MuteMode;
+import de.mossgrabers.framework.mode.track.PanMode;
+import de.mossgrabers.framework.mode.track.SoloMode;
+import de.mossgrabers.framework.mode.track.VolumeMode;
 import de.mossgrabers.framework.utils.StringUtils;
 import de.mossgrabers.framework.view.SceneView;
 import de.mossgrabers.framework.view.View;
@@ -149,8 +149,8 @@ public class LaunchpadControllerSetup extends AbstractControllerSetup<LaunchpadC
     {
         final IMidiAccess midiAccess = this.factory.createMidiAccess ();
         final IMidiOutput output = midiAccess.createOutput ();
-        final IMidiInput input = midiAccess.createInput (this.isPro ? "Novation Launchpad Pro" : "Novation Launchpad MkII",
-                "80????" /* Note off */, "90????" /* Note on */);
+        final IMidiInput input = midiAccess.createInput ("Pads", "80????" /* Note off */,
+                "90????" /* Note on */);
         final LaunchpadControlSurface surface = new LaunchpadControlSurface (this.model.getHost (), this.colorManager, this.configuration, output, input, this.isPro);
         this.surfaces.add (surface);
         surface.setDisplay (new DummyDisplay (this.host));
@@ -175,10 +175,10 @@ public class LaunchpadControllerSetup extends AbstractControllerSetup<LaunchpadC
         final ModeManager modeManager = surface.getModeManager ();
         modeManager.registerMode (Modes.MODE_REC_ARM, new RecArmMode (surface, this.model));
         modeManager.registerMode (Modes.MODE_TRACK_SELECT, new TrackMode (surface, this.model));
-        modeManager.registerMode (Modes.MODE_MUTE, new MuteMode (surface, this.model));
-        modeManager.registerMode (Modes.MODE_SOLO, new SoloMode (surface, this.model));
-        modeManager.registerMode (Modes.MODE_VOLUME, new VolumeMode (surface, this.model));
-        modeManager.registerMode (Modes.MODE_PAN, new PanMode (surface, this.model));
+        modeManager.registerMode (Modes.MODE_MUTE, new MuteMode<> (surface, this.model));
+        modeManager.registerMode (Modes.MODE_SOLO, new SoloMode<> (surface, this.model));
+        modeManager.registerMode (Modes.MODE_VOLUME, new VolumeMode<> (surface, this.model, true));
+        modeManager.registerMode (Modes.MODE_PAN, new PanMode<> (surface, this.model, true));
         modeManager.registerMode (Modes.MODE_SENDS, new SendMode (surface, this.model));
         modeManager.registerMode (Modes.MODE_STOP_CLIP, new StopClipMode (surface, this.model));
     }

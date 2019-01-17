@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.configuration;
@@ -55,7 +55,7 @@ public class ColorSettingImpl extends AbstractSetting<double []> implements ICol
     @Override
     public void set (final ColorEx color)
     {
-        this.set (color.getRed () / 255.0, color.getGreen () / 255.0, color.getBlue () / 255.0);
+        this.set (color.getRed (), color.getGreen (), color.getBlue ());
     }
 
 

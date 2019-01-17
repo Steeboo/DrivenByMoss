@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.trigger;
@@ -26,14 +26,14 @@ public abstract class CursorCommand<S extends IControlSurface<C>, C extends Conf
     /** The direction of the cursor. */
     public enum Direction
     {
-    /** Move left. */
-    LEFT,
-    /** Move right. */
-    RIGHT,
-    /** Move up. */
-    UP,
-    /** Move down. */
-    DOWN
+        /** Move left. */
+        LEFT,
+        /** Move right. */
+        RIGHT,
+        /** Move up. */
+        UP,
+        /** Move down. */
+        DOWN
     }
 
     protected Direction direction;

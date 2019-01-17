@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
@@ -78,7 +78,10 @@ public class ModelImpl extends AbstractModel
         final int numScenes = this.modelSetup.getNumScenes ();
         if (this.modelSetup.hasFlatTrackList ())
         {
-            tb = controllerHost.createMainTrackBank (numTracks, numSends, numScenes);
+            if (this.modelSetup.hasFullFlatTrackList ())
+                tb = controllerHost.createTrackBank (numTracks, numSends, numScenes, true);
+            else
+                tb = controllerHost.createMainTrackBank (numTracks, numSends, numScenes);
             tb.followCursorTrack (this.cursorTrack);
         }
         else

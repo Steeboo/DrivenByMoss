@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.scale;
@@ -861,7 +861,7 @@ public class Scales
 
 
     /**
-     * Overwrite to hook in translation for grids who do not send midi notes 36-100.
+     * Overwrite to hook in translation for grids which do not send midi notes 36-100.
      *
      * @param matrix The matrix to translate
      * @return The modified matrix

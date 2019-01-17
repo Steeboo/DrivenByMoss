@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push;
@@ -222,8 +222,8 @@ public class PushControllerSetup extends AbstractControllerSetup<PushControlSurf
     {
         final IMidiAccess midiAccess = this.factory.createMidiAccess ();
         final IMidiOutput output = midiAccess.createOutput ();
-        final IMidiInput input = midiAccess.createInput (this.isPush2 ? "Ableton Push 2" : "Ableton Push 1",
-                "80????" /* Note off */, "90????" /* Note on */, "B040??" /* Sustainpedal */);
+        final IMidiInput input = midiAccess.createInput ("Pads", "80????" /* Note off */,
+                "90????" /* Note on */, "B040??" /* Sustainpedal */);
         final PushControlSurface surface = new PushControlSurface (this.model.getHost (), this.colorManager, this.configuration, output, input);
         this.surfaces.add (surface);
         surface.setDisplay (this.createDisplay (output));
@@ -280,7 +280,7 @@ public class PushControllerSetup extends AbstractControllerSetup<PushControlSurf
         modeManager.registerMode (Modes.MODE_TRANSPORT, new TransportMode (surface, this.model));
 
         modeManager.registerMode (Modes.MODE_DEVICE_PARAMS, new DeviceParamsMode (surface, this.model));
-        modeManager.registerMode (Modes.MODE_DEVICE_LAYER, new DeviceLayerMode (surface, this.model));
+        modeManager.registerMode (Modes.MODE_DEVICE_LAYER, new DeviceLayerMode ("Layer", surface, this.model));
 
         modeManager.registerMode (Modes.MODE_BROWSER, new DeviceBrowserMode (surface, this.model));
 

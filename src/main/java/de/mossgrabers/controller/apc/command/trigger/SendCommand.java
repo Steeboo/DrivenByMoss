@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc.command.trigger;
@@ -9,6 +9,7 @@ import de.mossgrabers.controller.apc.controller.APCControlSurface;
 import de.mossgrabers.controller.apc.mode.Modes;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
 import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.mode.ModeManager;
 import de.mossgrabers.framework.utils.ButtonEvent;
 
 
@@ -61,7 +62,8 @@ public class SendCommand extends AbstractTriggerCommand<APCControlSurface, APCCo
         if (this.model.isEffectTrackBankActive ())
             return;
 
-        this.surface.getModeManager ().setActiveMode (Integer.valueOf (Modes.MODE_SEND1.intValue () + index));
-        this.surface.getDisplay ().notify ("Send " + (index + 1));
+        final ModeManager modeManager = this.surface.getModeManager ();
+        modeManager.setActiveMode (Integer.valueOf (Modes.MODE_SEND1.intValue () + index));
+        this.model.getHost ().showNotification (modeManager.getActiveOrTempMode ().getName ());
     }
 }

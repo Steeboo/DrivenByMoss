@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.launchpad.command.trigger;
@@ -10,7 +10,6 @@ import de.mossgrabers.controller.launchpad.controller.LaunchpadControlSurface;
 import de.mossgrabers.controller.launchpad.mode.Modes;
 import de.mossgrabers.controller.launchpad.view.DrumView;
 import de.mossgrabers.controller.launchpad.view.DrumView64;
-import de.mossgrabers.controller.launchpad.view.PlayView;
 import de.mossgrabers.controller.launchpad.view.RaindropsView;
 import de.mossgrabers.controller.launchpad.view.SequencerView;
 import de.mossgrabers.controller.launchpad.view.Views;
@@ -28,6 +27,7 @@ import de.mossgrabers.framework.scale.Scale;
 import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractSequencerView;
+import de.mossgrabers.framework.view.TransposeView;
 import de.mossgrabers.framework.view.View;
 import de.mossgrabers.framework.view.ViewManager;
 
@@ -231,7 +231,7 @@ public class LaunchpadCursorCommand extends CursorCommand<LaunchpadControlSurfac
         // VIEW_SESSION, VIEW_VOLUME, VIEW_PAN, VIEW_SENDS
         final Mode mode = this.surface.getModeManager ().getMode (Modes.MODE_VOLUME);
         if (mode != null)
-            mode.selectPreviousTrack ();
+            mode.selectPreviousItem ();
     }
 
 
@@ -280,7 +280,7 @@ public class LaunchpadCursorCommand extends CursorCommand<LaunchpadControlSurfac
         // VIEW_SESSION, VIEW_VOLUME, VIEW_PAN, VIEW_SENDS
         final Mode mode = this.surface.getModeManager ().getMode (Modes.MODE_VOLUME);
         if (mode != null)
-            mode.selectNextTrack ();
+            mode.selectNextItem ();
     }
 
 
@@ -292,7 +292,7 @@ public class LaunchpadCursorCommand extends CursorCommand<LaunchpadControlSurfac
 
         if (viewManager.isActiveView (Views.VIEW_PLAY) || viewManager.isActiveView (Views.VIEW_PIANO))
         {
-            ((PlayView) viewManager.getView (Views.VIEW_PLAY)).onOctaveUp (ButtonEvent.DOWN);
+            ((TransposeView) viewManager.getActiveView ()).onOctaveUp (ButtonEvent.DOWN);
             return;
         }
 
@@ -342,7 +342,7 @@ public class LaunchpadCursorCommand extends CursorCommand<LaunchpadControlSurfac
 
         if (viewManager.isActiveView (Views.VIEW_PLAY) || viewManager.isActiveView (Views.VIEW_PIANO))
         {
-            ((PlayView) viewManager.getView (Views.VIEW_PLAY)).onOctaveDown (ButtonEvent.DOWN);
+            ((TransposeView) viewManager.getActiveView ()).onOctaveDown (ButtonEvent.DOWN);
             return;
         }
 

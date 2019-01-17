@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.kontrol.osc.mkii;
@@ -24,6 +24,6 @@ public class KontrolOSCControllerDefinition extends DefaultControllerDefinition
      */
     public KontrolOSCControllerDefinition ()
     {
-        super ("", "Jürgen Moßgraber", "1.20", EXTENSION_ID, "Komplete Kontrol Mk II", "Native Instruments", 1, 0);
+        super ("", "Jürgen Moßgraber", "1.20", EXTENSION_ID, "Komplete Kontrol Mk II (OSC)", "Native Instruments", 1, 0);
     }
 }

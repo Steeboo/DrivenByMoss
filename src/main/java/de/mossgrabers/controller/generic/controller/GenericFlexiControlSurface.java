@@ -1,11 +1,12 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.generic.controller;
 
 import de.mossgrabers.controller.generic.CommandSlot;
 import de.mossgrabers.controller.generic.GenericFlexiConfiguration;
+import de.mossgrabers.controller.generic.mode.Modes;
 import de.mossgrabers.framework.command.trigger.clip.NewCommand;
 import de.mossgrabers.framework.controller.AbstractControlSurface;
 import de.mossgrabers.framework.controller.IValueChanger;
@@ -13,8 +14,10 @@ import de.mossgrabers.framework.controller.Relative2ValueChanger;
 import de.mossgrabers.framework.controller.Relative3ValueChanger;
 import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.daw.IApplication;
+import de.mossgrabers.framework.daw.ICursorDevice;
 import de.mossgrabers.framework.daw.IHost;
 import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.daw.IParameterBank;
 import de.mossgrabers.framework.daw.ISceneBank;
 import de.mossgrabers.framework.daw.ISlotBank;
 import de.mossgrabers.framework.daw.ITrackBank;
@@ -25,11 +28,15 @@ import de.mossgrabers.framework.daw.data.ISlot;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.daw.midi.IMidiInput;
 import de.mossgrabers.framework.daw.midi.IMidiOutput;
+import de.mossgrabers.framework.mode.AbstractMode;
+import de.mossgrabers.framework.mode.Mode;
 import de.mossgrabers.framework.utils.ButtonEvent;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -39,24 +46,39 @@ import java.util.Arrays;
  */
 public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFlexiConfiguration>
 {
-    private static final int   BUTTON_REPEAT_INTERVAL = 75;
+    private static final int           BUTTON_REPEAT_INTERVAL = 75;
 
-    private static final int   KNOB_MODE_ABSOLUTE     = 0;
-    private static final int   KNOB_MODE_RELATIVE1    = 1;
-    private static final int   KNOB_MODE_RELATIVE2    = 2;
-    private static final int   KNOB_MODE_RELATIVE3    = 3;
+    private static final int           KNOB_MODE_ABSOLUTE     = 0;
+    private static final int           KNOB_MODE_RELATIVE1    = 1;
+    private static final int           KNOB_MODE_RELATIVE2    = 2;
+    private static final int           KNOB_MODE_RELATIVE3    = 3;
 
-    protected static final int SCROLL_RATE            = 6;
+    protected static final int         SCROLL_RATE            = 6;
+    private static final List<Integer> MODE_IDS               = new ArrayList<> ();
 
-    private int                movementCounter        = 0;
+    private int                        movementCounter        = 0;
 
-    private IModel             model;
-    private IValueChanger      relative2ValueChanger  = new Relative2ValueChanger (128, 1, 0.5);
-    private IValueChanger      relative3ValueChanger  = new Relative3ValueChanger (128, 1, 0.5);
+    private final IModel               model;
+    private final IValueChanger        relative2ValueChanger  = new Relative2ValueChanger (128, 1, 0.5);
+    private final IValueChanger        relative3ValueChanger  = new Relative3ValueChanger (128, 1, 0.5);
+    private final int []               valueCache             = new int [GenericFlexiConfiguration.NUM_SLOTS];
+    private boolean                    isUpdatingValue        = false;
 
-    private int []             valueCache             = new int [GenericFlexiConfiguration.NUM_SLOTS];
-
-    private boolean            isUpdatingValue        = false;
+    static
+    {
+        MODE_IDS.add (Modes.MODE_TRACK);
+        MODE_IDS.add (Modes.MODE_VOLUME);
+        MODE_IDS.add (Modes.MODE_PAN);
+        MODE_IDS.add (Modes.MODE_SEND1);
+        MODE_IDS.add (Modes.MODE_SEND2);
+        MODE_IDS.add (Modes.MODE_SEND3);
+        MODE_IDS.add (Modes.MODE_SEND4);
+        MODE_IDS.add (Modes.MODE_SEND5);
+        MODE_IDS.add (Modes.MODE_SEND6);
+        MODE_IDS.add (Modes.MODE_SEND7);
+        MODE_IDS.add (Modes.MODE_SEND8);
+        MODE_IDS.add (Modes.MODE_DEVICE);
+    }
 
 
     /**
@@ -76,49 +98,70 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
         Arrays.fill (this.valueCache, -1);
         this.model = model;
 
-        this.configuration.addSettingObserver (GenericFlexiConfiguration.BUTTON_EXPORT, () -> {
-            final String filename = this.configuration.getFilename ();
-            if (filename == null || filename.trim ().isEmpty ())
-            {
-                this.host.showNotification ("Please enter a filename first.");
-                return;
-            }
-            final File file = new File (filename);
-            try
-            {
-                this.configuration.exportTo (file);
-                this.host.showNotification ("Exported to: " + file);
-            }
-            catch (final IOException ex)
-            {
-                this.host.showNotification ("Error writing file: " + ex.getMessage ());
-            }
-        });
+        this.configuration.addSettingObserver (GenericFlexiConfiguration.BUTTON_EXPORT, this::importFile);
+        this.configuration.addSettingObserver (GenericFlexiConfiguration.BUTTON_IMPORT, this::exportFile);
+    }
 
-        this.configuration.addSettingObserver (GenericFlexiConfiguration.BUTTON_IMPORT, () -> {
-            final String filename = this.configuration.getFilename ();
-            if (filename == null || filename.trim ().isEmpty ())
-            {
-                this.host.showNotification ("Please enter a filename first.");
-                return;
-            }
-            final File file = new File (filename);
-            if (!file.exists ())
-            {
-                this.host.showNotification ("The entered file does not exist.");
-                return;
-            }
 
-            try
-            {
-                this.configuration.importFrom (file);
-                this.host.showNotification ("Imported from: " + file);
-            }
-            catch (final IOException ex)
-            {
-                this.host.showNotification ("Error reading file: " + ex.getMessage ());
-            }
-        });
+    /**
+     * Export all settings to a file.
+     */
+    private void exportFile ()
+    {
+        final File file = this.getFile ();
+        if (file == null)
+            return;
+        if (!file.exists ())
+        {
+            this.host.showNotification ("The entered file does not exist.");
+            return;
+        }
+        try
+        {
+            this.configuration.importFrom (file);
+            this.host.showNotification ("Imported from: " + file);
+        }
+        catch (final IOException ex)
+        {
+            this.host.showNotification ("Error reading file: " + ex.getMessage ());
+        }
+    }
+
+
+    /**
+     * Import all settings from a file.
+     */
+    private void importFile ()
+    {
+        final File file = this.getFile ();
+        if (file == null)
+            return;
+        try
+        {
+            this.configuration.exportTo (file);
+            this.host.showNotification ("Exported to: " + file);
+        }
+        catch (final IOException ex)
+        {
+            this.host.showNotification ("Error writing file: " + ex.getMessage ());
+        }
+    }
+
+
+    /**
+     * Get a the im-/export file.
+     *
+     * @return The file or null
+     */
+    private File getFile ()
+    {
+        final String filename = this.configuration.getFilename ();
+        if (filename == null || filename.trim ().isEmpty ())
+        {
+            this.host.showNotification ("Please enter a filename first.");
+            return null;
+        }
+        return new File (filename);
     }
 
 
@@ -132,17 +175,31 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
         final CommandSlot [] slots = this.configuration.getCommandSlots ();
         for (int i = 0; i < slots.length; i++)
         {
-            if (slots[i].getType () != CommandSlot.TYPE_CC)
-                continue;
             final FlexiCommand command = slots[i].getCommand ();
             if (command == FlexiCommand.OFF || !slots[i].isSendValue ())
                 continue;
+
             final int value = this.getCommandValue (command);
             if (this.valueCache[i] == value)
                 continue;
             this.valueCache[i] = value;
-            if (value >= 0 && value <= 127)
-                this.getOutput ().sendCC (slots[i].getNumber (), value);
+
+            switch (slots[i].getType ())
+            {
+                case CommandSlot.TYPE_CC:
+                    if (value >= 0 && value <= 127)
+                        this.getOutput ().sendCCEx (slots[i].getMidiChannel (), slots[i].getNumber (), value);
+                    break;
+
+                case CommandSlot.TYPE_PITCH_BEND:
+                    if (value >= 0 && value <= 127)
+                        this.getOutput ().sendPitchbend (slots[i].getMidiChannel (), 0, value);
+                    break;
+
+                default:
+                    // Other types not supported
+                    break;
+            }
         }
     }
 
@@ -476,6 +533,9 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
             case MASTER_TOGGLE_ARM:
                 return this.model.getMasterTrack ().isRecArm () ? 127 : 0;
 
+            case MASTER_CROSSFADER:
+                return this.model.getTransport ().getCrossfade ();
+
             case DEVICE_TOGGLE_WINDOW:
                 return this.model.getCursorDevice ().isWindowOpen () ? 127 : 0;
 
@@ -570,6 +630,49 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
             case MARKER_SELECT_NEXT_BANK:
                 return -1;
 
+            case MODES_KNOB1:
+                return this.modeManager.getActiveOrTempMode ().getKnobValue (0);
+            case MODES_KNOB2:
+                return this.modeManager.getActiveOrTempMode ().getKnobValue (1);
+            case MODES_KNOB3:
+                return this.modeManager.getActiveOrTempMode ().getKnobValue (2);
+            case MODES_KNOB4:
+                return this.modeManager.getActiveOrTempMode ().getKnobValue (3);
+            case MODES_KNOB5:
+                return this.modeManager.getActiveOrTempMode ().getKnobValue (4);
+            case MODES_KNOB6:
+                return this.modeManager.getActiveOrTempMode ().getKnobValue (5);
+            case MODES_KNOB7:
+                return this.modeManager.getActiveOrTempMode ().getKnobValue (6);
+            case MODES_KNOB8:
+                return this.modeManager.getActiveOrTempMode ().getKnobValue (7);
+
+            case MODES_BUTTON1:
+            case MODES_BUTTON2:
+            case MODES_BUTTON3:
+            case MODES_BUTTON4:
+            case MODES_BUTTON5:
+            case MODES_BUTTON6:
+            case MODES_BUTTON7:
+            case MODES_BUTTON8:
+            case MODES_NEXT_PAGE:
+            case MODES_PREV_PAGE:
+            case MODES_SELECT_MODE_TRACK:
+            case MODES_SELECT_MODE_VOLUME:
+            case MODES_SELECT_MODE_PAN:
+            case MODES_SELECT_MODE_SEND1:
+            case MODES_SELECT_MODE_SEND2:
+            case MODES_SELECT_MODE_SEND3:
+            case MODES_SELECT_MODE_SEND4:
+            case MODES_SELECT_MODE_SEND5:
+            case MODES_SELECT_MODE_SEND6:
+            case MODES_SELECT_MODE_SEND7:
+            case MODES_SELECT_MODE_SEND8:
+            case MODES_SELECT_MODE_DEVICE:
+            case MODES_SELECT_MODE_NEXT:
+            case MODES_SELECT_MODE_PREV:
+                return -1;
+
             default:
                 return -1;
         }
@@ -590,22 +693,27 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
         {
             // Note on/off
             case 0x90:
-                this.configuration.setAddValues (CommandSlot.OPTIONS_TYPE[CommandSlot.TYPE_NOTE], data1, channel);
+                this.configuration.setLearnValues (GenericFlexiConfiguration.OPTIONS_TYPE[CommandSlot.TYPE_NOTE + 1], data1, channel);
                 slotIndex = this.configuration.getSlotCommand (CommandSlot.TYPE_NOTE, data1, channel);
                 break;
 
             // Program Change
             case 0xC0:
-                this.configuration.setAddValues (CommandSlot.OPTIONS_TYPE[CommandSlot.TYPE_PROGRAM_CHANGE], data1, channel);
+                this.configuration.setLearnValues (GenericFlexiConfiguration.OPTIONS_TYPE[CommandSlot.TYPE_PROGRAM_CHANGE + 1], data1, channel);
                 slotIndex = this.configuration.getSlotCommand (CommandSlot.TYPE_PROGRAM_CHANGE, data1, channel);
                 value = 127;
-                this.updateKeyTranslation ();
                 break;
 
             // CC
             case 0xB0:
-                this.configuration.setAddValues (CommandSlot.OPTIONS_TYPE[CommandSlot.TYPE_CC], data1, channel);
+                this.configuration.setLearnValues (GenericFlexiConfiguration.OPTIONS_TYPE[CommandSlot.TYPE_CC + 1], data1, channel);
                 slotIndex = this.configuration.getSlotCommand (CommandSlot.TYPE_CC, data1, channel);
+                break;
+
+            // Pitchbend
+            case 0xE0:
+                this.configuration.setLearnValues (GenericFlexiConfiguration.OPTIONS_TYPE[CommandSlot.TYPE_PITCH_BEND + 1], data1, channel);
+                slotIndex = this.configuration.getSlotCommand (CommandSlot.TYPE_PITCH_BEND, data1, channel);
                 break;
 
             default:
@@ -633,6 +741,9 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
 
         final CommandSlot commandSlot = this.configuration.getCommandSlots ()[slotIndex];
         final FlexiCommand command = commandSlot.getCommand ();
+        final Mode mode = this.modeManager.getActiveOrTempMode ();
+        if (mode == null)
+            return;
         switch (command)
         {
             case OFF:
@@ -923,7 +1034,11 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
             case TRACK_7_SELECT:
             case TRACK_8_SELECT:
                 if (value > 0)
-                    this.model.getTrackBank ().getItem (command.ordinal () - FlexiCommand.TRACK_1_SELECT.ordinal ()).select ();
+                {
+                    final ITrack track = this.model.getTrackBank ().getItem (command.ordinal () - FlexiCommand.TRACK_1_SELECT.ordinal ());
+                    track.select ();
+                    this.getDisplay ().notify (track.getName ());
+                }
                 break;
             // Track 1-8: Toggle Active
             case TRACK_1_TOGGLE_ACTIVE:
@@ -1212,6 +1327,10 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
                 if (value > 0)
                     this.model.getMasterTrack ().toggleRecArm ();
                 break;
+            // Master: Crossfader
+            case MASTER_CROSSFADER:
+                this.changeMasterCrossfader (commandSlot.getKnobMode (), value);
+                break;
 
             // Device: Toggle Window
             case DEVICE_TOGGLE_WINDOW:
@@ -1471,6 +1590,117 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
             case MARKER_SELECT_NEXT_BANK:
                 this.model.getMarkerBank ().selectNextPage ();
                 break;
+
+            case MODES_KNOB1:
+            case MODES_KNOB2:
+            case MODES_KNOB3:
+            case MODES_KNOB4:
+            case MODES_KNOB5:
+            case MODES_KNOB6:
+            case MODES_KNOB7:
+            case MODES_KNOB8:
+                this.changeModeValue (commandSlot.getKnobMode (), command.ordinal () - FlexiCommand.MODES_KNOB1.ordinal (), value);
+                break;
+
+            case MODES_BUTTON1:
+            case MODES_BUTTON2:
+            case MODES_BUTTON3:
+            case MODES_BUTTON4:
+            case MODES_BUTTON5:
+            case MODES_BUTTON6:
+            case MODES_BUTTON7:
+            case MODES_BUTTON8:
+                if (value > 0)
+                {
+                    mode.selectItem (command.ordinal () - FlexiCommand.MODES_BUTTON1.ordinal ());
+                    this.notifyName (mode);
+                }
+                break;
+
+            case MODES_NEXT_ITEM:
+                if (value > 0)
+                {
+                    mode.selectNextItem ();
+                    this.notifyName (mode);
+                }
+                break;
+            case MODES_PREV_ITEM:
+                if (value > 0)
+                {
+                    mode.selectPreviousItem ();
+                    this.notifyName (mode);
+                }
+                break;
+            case MODES_NEXT_PAGE:
+                if (value > 0)
+                {
+                    mode.selectNextItemPage ();
+                    this.notifyName (mode);
+                }
+                break;
+            case MODES_PREV_PAGE:
+                if (value > 0)
+                {
+                    mode.selectPreviousItemPage ();
+                    this.notifyName (mode);
+                }
+                break;
+            case MODES_SELECT_MODE_TRACK:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_TRACK);
+                break;
+            case MODES_SELECT_MODE_VOLUME:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_VOLUME);
+                break;
+            case MODES_SELECT_MODE_PAN:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_PAN);
+                break;
+            case MODES_SELECT_MODE_SEND1:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_SEND1);
+                break;
+            case MODES_SELECT_MODE_SEND2:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_SEND2);
+                break;
+            case MODES_SELECT_MODE_SEND3:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_SEND3);
+                break;
+            case MODES_SELECT_MODE_SEND4:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_SEND4);
+                break;
+            case MODES_SELECT_MODE_SEND5:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_SEND5);
+                break;
+            case MODES_SELECT_MODE_SEND6:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_SEND6);
+                break;
+            case MODES_SELECT_MODE_SEND7:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_SEND7);
+                break;
+            case MODES_SELECT_MODE_SEND8:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_SEND8);
+                break;
+            case MODES_SELECT_MODE_DEVICE:
+                if (value > 0)
+                    this.activateMode (Modes.MODE_DEVICE);
+                break;
+            case MODES_SELECT_MODE_NEXT:
+                if (value > 0)
+                    this.selectNextMode ();
+                break;
+            case MODES_SELECT_MODE_PREV:
+                if (value > 0)
+                    this.selectPreviousMode ();
+                break;
         }
 
         this.host.scheduleTask ( () -> {
@@ -1478,6 +1708,19 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
             this.isUpdatingValue = false;
         }, 400);
 
+    }
+
+
+    private void notifyName (final Mode mode)
+    {
+        this.host.scheduleTask ( () -> this.getDisplay ().notify (mode.getSelectedItemName ()), 100);
+    }
+
+
+    private void activateMode (final Integer modeID)
+    {
+        this.modeManager.setActiveMode (modeID);
+        this.host.showNotification (this.modeManager.getMode (modeID).getName ());
     }
 
 
@@ -1600,6 +1843,24 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
     }
 
 
+    private void changeMasterCrossfader (final int knobMode, final int value)
+    {
+        final ITransport transport = this.model.getTransport ();
+        if (knobMode == KNOB_MODE_ABSOLUTE)
+            transport.setCrossfade (value);
+        else
+            transport.setCrossfade (transport.getCrossfade () + this.getRelativeSpeed (knobMode, value));
+    }
+
+
+    private void changeModeValue (final int knobMode, final int knobIndex, final int value)
+    {
+        final Mode mode = this.modeManager.getActiveOrTempMode ();
+        ((AbstractMode<?, ?>) mode).setAbsolute (knobMode == KNOB_MODE_ABSOLUTE);
+        mode.onKnobValue (knobIndex, value);
+    }
+
+
     private void scrollTrackLeft (final boolean switchBank)
     {
         final ITrackBank tb = this.model.getCurrentTrackBank ();
@@ -1658,10 +1919,12 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
         if (!this.increaseKnobMovement ())
             return;
 
+        final ICursorDevice cursorDevice = this.model.getCursorDevice ();
         if (this.getRelativeSpeed (knobMode, value) > 0)
-            this.model.getCursorDevice ().selectNext ();
+            cursorDevice.selectNext ();
         else
-            this.model.getCursorDevice ().selectPrevious ();
+            cursorDevice.selectPrevious ();
+        this.getDisplay ().notify (cursorDevice.getName ());
     }
 
 
@@ -1673,10 +1936,13 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
         if (!this.increaseKnobMovement ())
             return;
 
+        final ICursorDevice cursorDevice = this.model.getCursorDevice ();
+        final IParameterBank parameterBank = cursorDevice.getParameterBank ();
         if (this.getRelativeSpeed (knobMode, value) > 0)
-            this.model.getCursorDevice ().getParameterBank ().scrollForwards ();
+            parameterBank.scrollForwards ();
         else
-            this.model.getCursorDevice ().getParameterBank ().scrollBackwards ();
+            parameterBank.scrollBackwards ();
+        this.getDisplay ().notify (cursorDevice.getParameterPageBank ().getSelectedItem ());
     }
 
 
@@ -1688,10 +1954,13 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
         if (!this.increaseKnobMovement ())
             return;
 
+        final ICursorDevice cursorDevice = this.model.getCursorDevice ();
+        final IParameterBank parameterBank = cursorDevice.getParameterBank ();
         if (this.getRelativeSpeed (knobMode, value) > 0)
-            this.model.getCursorDevice ().getParameterBank ().scrollPageForwards ();
+            parameterBank.scrollPageForwards ();
         else
-            this.model.getCursorDevice ().getParameterBank ().scrollPageBackwards ();
+            parameterBank.scrollPageBackwards ();
+        this.getDisplay ().notify (cursorDevice.getParameterPageBank ().getSelectedItem ());
     }
 
 
@@ -1825,5 +2094,47 @@ public class GenericFlexiControlSurface extends AbstractControlSurface<GenericFl
             return false;
         this.movementCounter = 0;
         return true;
+    }
+
+
+    private void selectPreviousMode ()
+    {
+        final ITrackBank trackBank = this.model.getTrackBank ();
+        final Integer activeModeId = this.modeManager.getActiveModeId ();
+        int index = MODE_IDS.indexOf (activeModeId);
+        Integer newMode;
+        int newModeID;
+        // If a send mode is selected check if the according send exists
+        do
+        {
+            index--;
+            if (index < 0 || index >= MODE_IDS.size ())
+                index = MODE_IDS.size () - 1;
+            newMode = MODE_IDS.get (index);
+            newModeID = newMode.intValue ();
+        } while (newModeID >= Modes.MODE_SEND1.intValue () && newModeID <= Modes.MODE_SEND8.intValue () && !trackBank.canEditSend (newModeID - Modes.MODE_SEND1.intValue ()));
+
+        this.activateMode (newMode);
+    }
+
+
+    private void selectNextMode ()
+    {
+        final ITrackBank trackBank = this.model.getTrackBank ();
+        final Integer activeModeId = this.modeManager.getActiveModeId ();
+        int index = MODE_IDS.indexOf (activeModeId);
+        Integer newMode;
+        int newModeID;
+        // If a send mode is selected check if the according send exists
+        do
+        {
+            index++;
+            if (index < 0 || index >= MODE_IDS.size ())
+                index = 0;
+            newMode = MODE_IDS.get (index);
+            newModeID = newMode.intValue ();
+        } while (newModeID >= Modes.MODE_SEND1.intValue () && newModeID <= Modes.MODE_SEND8.intValue () && !trackBank.canEditSend (newModeID - Modes.MODE_SEND1.intValue ()));
+
+        this.activateMode (newMode);
     }
 }
