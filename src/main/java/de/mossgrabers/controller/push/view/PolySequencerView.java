@@ -15,6 +15,7 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractPlayView;
 import de.mossgrabers.framework.view.AbstractSequencerView;
 import de.mossgrabers.framework.view.TransposeView;
+import de.mossgrabers.framework.view.Views;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -59,10 +60,7 @@ public class PolySequencerView extends AbstractSequencerView<PushControlSurface,
         if (buttonID == PushControlSurface.PUSH_BUTTON_REPEAT)
             return this.model.getHost ().hasRepeat ();
 
-        if (this.surface.getConfiguration ().isPush2 () && buttonID == PushControlSurface.PUSH_BUTTON_USER_MODE)
-            return false;
-
-        return true;
+        return !this.surface.getConfiguration ().isPush2 () || buttonID != PushControlSurface.PUSH_BUTTON_USER_MODE;
     }
 
 

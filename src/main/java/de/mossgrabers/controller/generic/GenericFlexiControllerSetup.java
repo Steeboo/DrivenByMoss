@@ -6,9 +6,7 @@ package de.mossgrabers.controller.generic;
 
 import de.mossgrabers.controller.generic.controller.FlexiCommand;
 import de.mossgrabers.controller.generic.controller.GenericFlexiControlSurface;
-import de.mossgrabers.controller.generic.mode.Modes;
 import de.mossgrabers.framework.configuration.ISettingsUI;
-import de.mossgrabers.framework.configuration.IValueObserver;
 import de.mossgrabers.framework.controller.AbstractControllerSetup;
 import de.mossgrabers.framework.controller.DefaultValueChanger;
 import de.mossgrabers.framework.controller.ISetupFactory;
@@ -25,11 +23,14 @@ import de.mossgrabers.framework.daw.midi.IMidiAccess;
 import de.mossgrabers.framework.daw.midi.IMidiInput;
 import de.mossgrabers.framework.daw.midi.IMidiOutput;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
+import de.mossgrabers.framework.mode.device.BrowserMode;
 import de.mossgrabers.framework.mode.device.ParameterMode;
 import de.mossgrabers.framework.mode.track.PanMode;
 import de.mossgrabers.framework.mode.track.SendMode;
 import de.mossgrabers.framework.mode.track.TrackMode;
 import de.mossgrabers.framework.mode.track.VolumeMode;
+import de.mossgrabers.framework.observer.IValueObserver;
 import de.mossgrabers.framework.scale.Scales;
 
 import java.util.Set;
@@ -92,7 +93,7 @@ public class GenericFlexiControllerSetup extends AbstractControllerSetup<Generic
         final IMidiOutput output = midiAccess.createOutput ();
         final IMidiInput input = midiAccess.createInput ("Generic Flexi");
 
-        final GenericFlexiControlSurface surface = new GenericFlexiControlSurface (this.model.getHost (), this.model, this.colorManager, this.configuration, output, input);
+        final GenericFlexiControlSurface surface = new GenericFlexiControlSurface (this.host, this.model, this.colorManager, this.configuration, output, input);
         this.surfaces.add (surface);
         surface.setDisplay (new DummyDisplay (this.host));
 
@@ -111,7 +112,8 @@ public class GenericFlexiControllerSetup extends AbstractControllerSetup<Generic
         modeManager.registerMode (Modes.MODE_PAN, new PanMode<> (surface, this.model, true));
         for (int i = 0; i < 8; i++)
             modeManager.registerMode (Integer.valueOf (Modes.MODE_SEND1.intValue () + i), new SendMode<> (i, surface, this.model, true));
-        modeManager.registerMode (Modes.MODE_DEVICE, new ParameterMode<> (surface, this.model, true));
+        modeManager.registerMode (Modes.MODE_DEVICE_PARAMS, new ParameterMode<> (surface, this.model, true));
+        modeManager.registerMode (Modes.MODE_BROWSER, new BrowserMode<> (surface, this.model));
 
         modeManager.setDefaultMode (Modes.MODE_VOLUME);
     }
@@ -137,10 +139,10 @@ public class GenericFlexiControllerSetup extends AbstractControllerSetup<Generic
         this.configuration.addSettingObserver (GenericFlexiConfiguration.SLOT_CHANGE, surface::updateKeyTranslation);
 
         final ITrackBank trackBank = this.model.getTrackBank ();
-        trackBank.addSelectionObserver (this::handleTrackChange);
+        trackBank.addSelectionObserver ( (index, selected) -> this.handleTrackChange (selected));
         final ITrackBank effectTrackBank = this.model.getEffectTrackBank ();
         if (effectTrackBank != null)
-            effectTrackBank.addSelectionObserver (this::handleTrackChange);
+            effectTrackBank.addSelectionObserver ( (index, selected) -> this.handleTrackChange (selected));
 
         surface.getModeManager ().addModeListener ( (oldMode, newMode) -> this.updateIndication (newMode));
     }
@@ -149,10 +151,9 @@ public class GenericFlexiControllerSetup extends AbstractControllerSetup<Generic
     /**
      * Handle a track selection change.
      *
-     * @param index The index of the track
      * @param isSelected Has the track been selected?
      */
-    private void handleTrackChange (final int index, final boolean isSelected)
+    private void handleTrackChange (final boolean isSelected)
     {
         if (isSelected)
             this.update (null);
@@ -239,6 +240,6 @@ public class GenericFlexiControllerSetup extends AbstractControllerSetup<Generic
     {
         if (commands.contains (allCommands[FlexiCommand.DEVICE_SET_PARAMETER_1.ordinal () + parameterIndex]))
             return true;
-        return commands.contains (allCommands[FlexiCommand.MODES_KNOB1.ordinal () + parameterIndex]) && this.getSurface ().getModeManager ().isActiveMode (Modes.MODE_DEVICE);
+        return commands.contains (allCommands[FlexiCommand.MODES_KNOB1.ordinal () + parameterIndex]) && this.getSurface ().getModeManager ().isActiveMode (Modes.MODE_DEVICE_PARAMS);
     }
 }

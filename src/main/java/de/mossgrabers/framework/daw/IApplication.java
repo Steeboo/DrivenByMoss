@@ -4,6 +4,9 @@
 
 package de.mossgrabers.framework.daw;
 
+import de.mossgrabers.framework.observer.ObserverManagement;
+
+
 /**
  * Interface to the application.
  *
@@ -45,6 +48,18 @@ public interface IApplication extends ObserverManagement
      * @param panelLayout The name of the new panel layout (ARRANGE, MIX, EDIT)
      */
     void setPanelLayout (final String panelLayout);
+
+
+    /**
+     * Switches to the previous panel layout of the active display profile.
+     */
+    void previousPanelLayout ();
+
+
+    /**
+     * Switches to the next panel layout of the active display profile.
+     */
+    void nextPanelLayout ();
 
 
     /**

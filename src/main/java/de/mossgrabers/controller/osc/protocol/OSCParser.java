@@ -11,6 +11,7 @@ import de.mossgrabers.framework.controller.display.DummyDisplay;
 import de.mossgrabers.framework.daw.IApplication;
 import de.mossgrabers.framework.daw.IArranger;
 import de.mossgrabers.framework.daw.IBrowser;
+import de.mossgrabers.framework.daw.IChannelBank;
 import de.mossgrabers.framework.daw.ICursorDevice;
 import de.mossgrabers.framework.daw.IDeviceBank;
 import de.mossgrabers.framework.daw.IHost;
@@ -94,7 +95,7 @@ public class OSCParser extends AbstractOpenSoundControlParser
 
         final Object [] values = message.getValues ();
         final Object value = values == null || values.length == 0 ? null : values[0];
-        final int numValue = value == null || !(value instanceof Number) ? -1 : ((Number) value).intValue ();
+        final double numValue = !(value instanceof Number) ? -1 : ((Number) value).doubleValue ();
 
         final String command = oscParts.removeFirst ();
 
@@ -165,11 +166,11 @@ public class OSCParser extends AbstractOpenSoundControlParser
                         {
                             case "+":
                                 if (value == null || numValue > 0)
-                                    sceneBank.scrollPageForwards ();
+                                    sceneBank.selectNextPage ();
                                 break;
                             case "-":
                                 if (value == null || numValue > 0)
-                                    sceneBank.scrollPageBackwards ();
+                                    sceneBank.selectPreviousPage ();
                                 break;
                             default:
                                 this.host.error ("Unknown Scene subcommand: " + subCommand2);
@@ -294,7 +295,7 @@ public class OSCParser extends AbstractOpenSoundControlParser
     }
 
 
-    private boolean parseTransportCommands (final String command, final LinkedList<String> oscParts, final Object value, final int numValue)
+    private boolean parseTransportCommands (final String command, final LinkedList<String> oscParts, final Object value, final double numValue)
     {
         switch (command)
         {
@@ -397,16 +398,14 @@ public class OSCParser extends AbstractOpenSoundControlParser
                         if (value == null || numValue > 0)
                         {
                             final double v = value == null ? 1.0 : ((Number) value).doubleValue ();
-                            if (value instanceof Number)
-                                this.transport.setTempo (this.transport.getTempo () + v);
+                            this.transport.setTempo (this.transport.getTempo () + v);
                         }
                         return true;
                     case "-":
                         if (value == null || numValue > 0)
                         {
                             final double v2 = value == null ? 1.0 : ((Number) value).doubleValue ();
-                            if (value instanceof Number)
-                                this.transport.setTempo (this.transport.getTempo () - v2);
+                            this.transport.setTempo (this.transport.getTempo () - v2);
                         }
                         return true;
                     default:
@@ -469,7 +468,7 @@ public class OSCParser extends AbstractOpenSoundControlParser
                 return true;
 
             case "preroll":
-                this.transport.setPrerollAsBars (numValue);
+                this.transport.setPrerollAsBars ((int) numValue);
                 return true;
 
             default:
@@ -615,7 +614,7 @@ public class OSCParser extends AbstractOpenSoundControlParser
     }
 
 
-    private void parseTrackCommands (final LinkedList<String> oscParts, final Object value, final int numValue)
+    private void parseTrackCommands (final LinkedList<String> oscParts, final Object value, final double numValue)
     {
         if (oscParts.isEmpty ())
         {
@@ -678,19 +677,9 @@ public class OSCParser extends AbstractOpenSoundControlParser
                             return;
                         }
                         if ("+".equals (oscParts.removeFirst ()))
-                        {
-                            if (!tb.canScrollForwards ())
-                                return;
-                            tb.scrollPageForwards ();
-                            this.host.scheduleTask ( () -> tb.getItem (0).select (), 75);
-                        }
+                            tb.selectNextPage ();
                         else // "-"
-                        {
-                            if (!tb.canScrollBackwards ())
-                                return;
-                            tb.scrollPageBackwards ();
-                            this.host.scheduleTask ( () -> tb.getItem (7).select (), 75);
-                        }
+                            tb.selectPreviousPage ();
                         break;
                     case "+":
                         tb.scrollForwards ();
@@ -710,10 +699,7 @@ public class OSCParser extends AbstractOpenSoundControlParser
                 final int index = sel == null ? 0 : sel.getIndex () + 1;
                 if (index == tb.getPageSize ())
                 {
-                    if (!tb.canScrollForwards ())
-                        return;
-                    tb.scrollPageForwards ();
-                    this.host.scheduleTask ( () -> tb.getItem (0).select (), 75);
+                    tb.selectNextPage ();
                     return;
                 }
                 tb.getItem (index).select ();
@@ -726,10 +712,7 @@ public class OSCParser extends AbstractOpenSoundControlParser
                 final int index = sel == null ? 0 : sel.getIndex () - 1;
                 if (index == -1)
                 {
-                    if (!tb.canScrollBackwards ())
-                        return;
-                    tb.scrollPageBackwards ();
-                    this.host.scheduleTask ( () -> tb.getItem (7).select (), 75);
+                    tb.selectPreviousPage ();
                     return;
                 }
                 tb.getItem (index).select ();
@@ -836,8 +819,9 @@ public class OSCParser extends AbstractOpenSoundControlParser
                     track.setCrossfadeMode (parts.removeFirst ());
                 break;
 
+            case "select":
             case "selected":
-                if (intValue > 0)
+                if (intValue != 0)
                     track.select ();
                 break;
 
@@ -913,8 +897,7 @@ public class OSCParser extends AbstractOpenSoundControlParser
                 break;
 
             case "enter":
-                track.select ();
-                this.model.getCurrentTrackBank ().selectChildren ();
+                track.enter ();
                 break;
 
             case "color":
@@ -1096,15 +1079,9 @@ public class OSCParser extends AbstractOpenSoundControlParser
                             return;
                         }
                         if ("+".equals (oscParts.removeFirst ()))
-                        {
-                            deviceBank.scrollPageForwards ();
-                            this.host.scheduleTask ( () -> deviceBank.getItem (0).select (), 75);
-                        }
+                            deviceBank.selectNextPage ();
                         else // "-"
-                        {
-                            deviceBank.scrollPageBackwards ();
-                            this.host.scheduleTask ( () -> deviceBank.getItem (deviceBank.getPageSize () - 1).select (), 75);
-                        }
+                            deviceBank.selectPreviousPage ();
                         break;
                     default:
                         this.host.error ("Unknown Device Bank subcommand: " + subCommand3);
@@ -1163,10 +1140,10 @@ public class OSCParser extends AbstractOpenSoundControlParser
                         switch (part)
                         {
                             case "+":
-                                cursorDevice.getParameterBank ().scrollPageForwards ();
+                                cursorDevice.getParameterBank ().selectNextPage ();
                                 break;
                             case "-":
-                                cursorDevice.getParameterBank ().scrollPageBackwards ();
+                                cursorDevice.getParameterBank ().selectPreviousPage ();
                                 break;
 
                             case "bank":
@@ -1314,12 +1291,10 @@ public class OSCParser extends AbstractOpenSoundControlParser
                 switch (subCommand)
                 {
                     case "+":
-                        markerBank.scrollPageForwards ();
-                        this.host.scheduleTask ( () -> markerBank.getItem (0).select (), 75);
+                        markerBank.selectNextPage ();
                         break;
                     case "-":
-                        markerBank.scrollPageBackwards ();
-                        this.host.scheduleTask ( () -> markerBank.getItem (markerBank.getPageSize () - 1).select (), 75);
+                        markerBank.selectPreviousPage ();
                         break;
                     default:
                         this.host.error ("Unknown Marker Bank subcommand: " + subCommand);
@@ -1454,11 +1429,18 @@ public class OSCParser extends AbstractOpenSoundControlParser
         }
         final String command = parts.removeFirst ();
         final int numValue = value instanceof Number ? ((Number) value).intValue () : -1;
-        final IChannel layer = cursorDevice.getLayerOrDrumPadBank ().getItem (layerIndex);
+        final IChannelBank<?> layerOrDrumPadBank = cursorDevice.getLayerOrDrumPadBank ();
+        if (layerIndex >= layerOrDrumPadBank.getPageSize ())
+        {
+            this.host.println ("Layer or drumpad index larger than page size: " + layerIndex);
+            return;
+        }
+
+        final IChannel layer = layerOrDrumPadBank.getItem (layerIndex);
         switch (command)
         {
             case "select":
-                cursorDevice.getLayerOrDrumPadBank ().getItem (layerIndex).select ();
+                layerOrDrumPadBank.getItem (layerIndex).select ();
                 break;
 
             case PART_VOLUME:
@@ -1491,6 +1473,10 @@ public class OSCParser extends AbstractOpenSoundControlParser
 
             case "send":
                 final int sendNo = Integer.parseInt (parts.removeFirst ()) - 1;
+                if (parts.isEmpty ())
+                    return;
+                if (!PART_VOLUME.equals (parts.removeFirst ()))
+                    return;
                 if (parts.isEmpty ())
                     layer.getSendBank ().getItem (sendNo).setValue (numValue);
                 else if (PART_TOUCH.equals (parts.get (0)))
@@ -1557,7 +1543,7 @@ public class OSCParser extends AbstractOpenSoundControlParser
         final OSCConfiguration conf = (OSCConfiguration) this.configuration;
         try
         {
-            midiChannel = Math.max (Math.min (0, Integer.parseInt (command) - 1), 15);
+            midiChannel = Math.min (Math.max (0, Integer.parseInt (command) - 1), 15);
         }
         catch (final NumberFormatException ex)
         {

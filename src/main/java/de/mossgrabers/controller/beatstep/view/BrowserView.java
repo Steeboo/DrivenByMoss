@@ -12,6 +12,7 @@ import de.mossgrabers.framework.daw.IBrowser;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.view.AbstractView;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -80,6 +81,10 @@ public class BrowserView extends AbstractView<BeatstepControlSurface, BeatstepCo
                     for (int i = 0; i < 64 - value; i++)
                         browser.selectPreviousResult ();
                 }
+                break;
+
+            default:
+                // Not used
                 break;
         }
     }

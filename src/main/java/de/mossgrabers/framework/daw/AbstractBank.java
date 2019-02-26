@@ -5,6 +5,7 @@
 package de.mossgrabers.framework.daw;
 
 import de.mossgrabers.framework.daw.data.IItem;
+import de.mossgrabers.framework.observer.ItemSelectionObserver;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -172,5 +173,25 @@ public abstract class AbstractBank<T extends IItem> implements IBank<T>
     public void selectNextPage ()
     {
         // Intentionally empty
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean canScrollBackwards ()
+    {
+        final IItem sel = this.getSelectedItem ();
+        final int selIndex = sel != null ? sel.getIndex () : -1;
+        return selIndex > 0 || this.canScrollPageBackwards ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean canScrollForwards ()
+    {
+        final IItem sel = this.getSelectedItem ();
+        final int selIndex = sel != null ? sel.getIndex () : -1;
+        return selIndex >= 0 && selIndex < 7 && this.getItem (selIndex + 1).doesExist () || this.canScrollPageForwards ();
     }
 }

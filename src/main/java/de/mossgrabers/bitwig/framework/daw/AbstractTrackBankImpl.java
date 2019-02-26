@@ -4,12 +4,17 @@
 
 package de.mossgrabers.bitwig.framework.daw;
 
+import de.mossgrabers.bitwig.framework.daw.data.AbstractDeviceChainImpl;
 import de.mossgrabers.bitwig.framework.daw.data.TrackImpl;
 import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.daw.IHost;
 import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.data.ITrack;
+import de.mossgrabers.framework.observer.IIndexedValueObserver;
 
+import com.bitwig.extension.controller.api.Channel;
+import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
+import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.TrackBank;
 
 
@@ -20,34 +25,29 @@ import com.bitwig.extension.controller.api.TrackBank;
  */
 public abstract class AbstractTrackBankImpl extends AbstractChannelBank<TrackBank, ITrack> implements ITrackBank
 {
+    protected final CursorTrack cursorTrack;
+
+
     /**
      * Constructor.
      *
      * @param host The DAW host
      * @param valueChanger The value changer
+     * @param cursorTrack The cursor track assigned to this track bank
      * @param bank The bank to encapsulate
      * @param numTracks The number of tracks of a bank page
      * @param numScenes The number of scenes of a bank page
      * @param numSends The number of sends of a bank page
      */
-    public AbstractTrackBankImpl (final IHost host, final IValueChanger valueChanger, final TrackBank bank, final int numTracks, final int numScenes, final int numSends)
+    public AbstractTrackBankImpl (final IHost host, final IValueChanger valueChanger, final CursorTrack cursorTrack, final TrackBank bank, final int numTracks, final int numScenes, final int numSends)
     {
         super (host, valueChanger, bank, numTracks, numScenes, numSends);
 
+        this.cursorTrack = cursorTrack;
+
         this.initItems ();
 
-        final int pageSize = this.getPageSize ();
-
-        this.bank.cursorIndex ().addValueObserver (index -> {
-            for (int i = 0; i < pageSize; i++)
-            {
-                final boolean isSelected = index == i;
-                if (this.items.get (i).isSelected () != isSelected)
-                    this.handleBankTrackSelection (i, isSelected);
-            }
-        });
-
-        this.sceneBank = new SceneBankImpl (host, valueChanger, this.bank.sceneBank (), this.numScenes);
+        this.sceneBank = new SceneBankImpl (host, valueChanger, this.numScenes == 0 ? null : this.bank.sceneBank (), this.numScenes);
     }
 
 
@@ -66,7 +66,24 @@ public abstract class AbstractTrackBankImpl extends AbstractChannelBank<TrackBan
     public void setIndication (final boolean enable)
     {
         for (int index = 0; index < this.getPageSize (); index++)
-            this.bank.getItemAt (index).clipLauncherSlotBank ().setIndication (enable);
+        {
+            final ClipLauncherSlotBank bank = this.bank.getItemAt (index).clipLauncherSlotBank ();
+            if (bank != null)
+                bank.setIndication (enable);
+        }
+    }
+
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void addNameObserver (final IIndexedValueObserver<String> observer)
+    {
+        for (int index = 0; index < this.getPageSize (); index++)
+        {
+            final int i = index;
+            ((AbstractDeviceChainImpl<Channel>) this.getItem (index)).addNameObserver (name -> observer.update (i, name));
+        }
     }
 
 
@@ -93,19 +110,6 @@ public abstract class AbstractTrackBankImpl extends AbstractChannelBank<TrackBan
     protected void initItems ()
     {
         for (int i = 0; i < this.pageSize; i++)
-            this.items.add (new TrackImpl (this.host, this.valueChanger, this.bank.getItemAt (i), i, this.numSends, this.numScenes));
-    }
-
-
-    /**
-     * Handles track changes. Notifies all track change observers.
-     *
-     * @param index The index of the newly de-/selected track
-     * @param isSelected True if selected
-     */
-    private void handleBankTrackSelection (final int index, final boolean isSelected)
-    {
-        this.getItem (index).setSelected (isSelected);
-        this.notifySelectionObservers (index, isSelected);
+            this.items.add (new TrackImpl (this.host, this.valueChanger, this.cursorTrack, this.bank.getItemAt (i), i, this.numSends, this.numScenes));
     }
 }

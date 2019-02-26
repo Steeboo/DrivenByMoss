@@ -11,24 +11,23 @@ import de.mossgrabers.controller.kontrol.usb.mki.command.trigger.Kontrol1CursorC
 import de.mossgrabers.controller.kontrol.usb.mki.command.trigger.Kontrol1PlayCommand;
 import de.mossgrabers.controller.kontrol.usb.mki.command.trigger.MainEncoderButtonCommand;
 import de.mossgrabers.controller.kontrol.usb.mki.command.trigger.ScaleButtonCommand;
+import de.mossgrabers.controller.kontrol.usb.mki.controller.Kontrol1Colors;
 import de.mossgrabers.controller.kontrol.usb.mki.controller.Kontrol1ControlSurface;
 import de.mossgrabers.controller.kontrol.usb.mki.controller.Kontrol1Display;
 import de.mossgrabers.controller.kontrol.usb.mki.controller.Kontrol1UsbDevice;
-import de.mossgrabers.controller.kontrol.usb.mki.mode.Modes;
 import de.mossgrabers.controller.kontrol.usb.mki.mode.ScaleMode;
 import de.mossgrabers.controller.kontrol.usb.mki.mode.device.BrowseMode;
 import de.mossgrabers.controller.kontrol.usb.mki.mode.device.ParamsMode;
 import de.mossgrabers.controller.kontrol.usb.mki.mode.track.TrackMode;
 import de.mossgrabers.controller.kontrol.usb.mki.mode.track.VolumeMode;
 import de.mossgrabers.controller.kontrol.usb.mki.view.ControlView;
-import de.mossgrabers.controller.kontrol.usb.mki.view.Views;
 import de.mossgrabers.framework.command.Commands;
 import de.mossgrabers.framework.command.continuous.KnobRowModeCommand;
+import de.mossgrabers.framework.command.core.NopCommand;
 import de.mossgrabers.framework.command.trigger.BrowserCommand;
-import de.mossgrabers.framework.command.trigger.CursorCommand.Direction;
-import de.mossgrabers.framework.command.trigger.KnobRowTouchModeCommand;
-import de.mossgrabers.framework.command.trigger.ModeMultiSelectCommand;
-import de.mossgrabers.framework.command.trigger.NopCommand;
+import de.mossgrabers.framework.command.trigger.mode.CursorCommand.Direction;
+import de.mossgrabers.framework.command.trigger.mode.KnobRowTouchModeCommand;
+import de.mossgrabers.framework.command.trigger.mode.ModeMultiSelectCommand;
 import de.mossgrabers.framework.command.trigger.transport.MetronomeCommand;
 import de.mossgrabers.framework.command.trigger.transport.RecordCommand;
 import de.mossgrabers.framework.command.trigger.transport.StopCommand;
@@ -49,8 +48,11 @@ import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.daw.midi.IMidiAccess;
 import de.mossgrabers.framework.daw.midi.IMidiInput;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
+import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.view.View;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -83,9 +85,19 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
 
     /** {@inheritDoc} */
     @Override
+    protected void createScales ()
+    {
+        this.scales = new Scales (this.valueChanger, 0, 88, 88, 1);
+        this.scales.setChromatic (true);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
     protected void createModel ()
     {
         final ModelSetup ms = new ModelSetup ();
+        ms.setNumDrumPadLayers (128);
         this.model = this.factory.createModel (this.colorManager, this.valueChanger, this.scales, ms);
         final ITrackBank trackBank = this.model.getTrackBank ();
         trackBank.addSelectionObserver ( (index, isSelected) -> {
@@ -93,6 +105,9 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
             if (activeView instanceof ControlView)
                 ((ControlView) activeView).updateButtons ();
         });
+
+        final ICursorDevice primary = this.model.getInstrumentDevice ();
+        primary.getDrumPadBank ().setIndication (true);
     }
 
 
@@ -100,8 +115,7 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
     @Override
     protected void createSurface ()
     {
-        final IHost host = this.model.getHost ();
-        final Kontrol1UsbDevice usbDevice = new Kontrol1UsbDevice (this.modelIndex, host);
+        final Kontrol1UsbDevice usbDevice = new Kontrol1UsbDevice (this.modelIndex, this.host);
         usbDevice.init ();
 
         final IMidiAccess midiAccess = this.factory.createMidiAccess ();
@@ -110,10 +124,12 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
                 "B001??" /* Sustainpedal + Modulation */, "D0????" /* Channel Aftertouch */,
                 "E0????" /* Pitchbend */);
 
-        final Kontrol1ControlSurface surface = new Kontrol1ControlSurface (host, this.colorManager, this.configuration, input, usbDevice);
+        Kontrol1Colors.addColors (this.colorManager);
+
+        final Kontrol1ControlSurface surface = new Kontrol1ControlSurface (this.host, this.colorManager, this.configuration, input, usbDevice);
         usbDevice.setCallback (surface);
         this.surfaces.add (surface);
-        final Kontrol1Display display = new Kontrol1Display (host, this.valueChanger.getUpperBound (), this.configuration, usbDevice);
+        final Kontrol1Display display = new Kontrol1Display (this.host, this.valueChanger.getUpperBound (), this.configuration, usbDevice);
         surface.setDisplay (display);
 
         surface.getModeManager ().setDefaultMode (Modes.MODE_TRACK);
@@ -129,10 +145,10 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
 
         modeManager.registerMode (Modes.MODE_TRACK, new TrackMode (surface, this.model));
         modeManager.registerMode (Modes.MODE_VOLUME, new VolumeMode (surface, this.model));
-        modeManager.registerMode (Modes.MODE_PARAMS, new ParamsMode (surface, this.model));
+        modeManager.registerMode (Modes.MODE_DEVICE_PARAMS, new ParamsMode (surface, this.model));
         modeManager.registerMode (Modes.MODE_BROWSER, new BrowseMode (surface, this.model));
 
-        modeManager.registerMode (Modes.MODE_SCALE, new ScaleMode (surface, this.model));
+        modeManager.registerMode (Modes.MODE_SCALES, new ScaleMode (surface, this.model));
     }
 
 
@@ -151,14 +167,15 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
     protected void createObservers ()
     {
         this.createScaleObservers (this.configuration);
+        this.configuration.addSettingObserver (Kontrol1Configuration.SCALE_IS_ACTIVE, this::updateViewNoteMapping);
 
         this.getSurface ().getModeManager ().addModeListener ( (oldMode, newMode) -> this.updateIndication (newMode));
 
         final ITrackBank trackBank = this.model.getTrackBank ();
-        trackBank.addSelectionObserver (this::handleTrackChange);
+        trackBank.addSelectionObserver ( (index, isSelected) -> this.handleTrackChange (isSelected));
         final ITrackBank effectTrackBank = this.model.getEffectTrackBank ();
         if (effectTrackBank != null)
-            effectTrackBank.addSelectionObserver (this::handleTrackChange);
+            effectTrackBank.addSelectionObserver ( (index, isSelected) -> this.handleTrackChange (isSelected));
     }
 
 
@@ -178,8 +195,8 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
         this.addTriggerCommand (Commands.COMMAND_FORWARD, Kontrol1ControlSurface.BUTTON_FWD, new WindCommand<> (this.model, surface, true));
         this.addTriggerCommand (Commands.COMMAND_LOOP, Kontrol1ControlSurface.BUTTON_LOOP, new ToggleLoopCommand<> (this.model, surface));
 
-        this.addTriggerCommand (Commands.COMMAND_PAGE_LEFT, Kontrol1ControlSurface.BUTTON_PAGE_LEFT, new ModeMultiSelectCommand<> (this.model, surface, Modes.MODE_PARAMS, Modes.MODE_VOLUME, Modes.MODE_TRACK));
-        this.addTriggerCommand (Commands.COMMAND_PAGE_RIGHT, Kontrol1ControlSurface.BUTTON_PAGE_RIGHT, new ModeMultiSelectCommand<> (this.model, surface, Modes.MODE_TRACK, Modes.MODE_VOLUME, Modes.MODE_PARAMS));
+        this.addTriggerCommand (Commands.COMMAND_PAGE_LEFT, Kontrol1ControlSurface.BUTTON_PAGE_LEFT, new ModeMultiSelectCommand<> (this.model, surface, Modes.MODE_DEVICE_PARAMS, Modes.MODE_VOLUME, Modes.MODE_TRACK));
+        this.addTriggerCommand (Commands.COMMAND_PAGE_RIGHT, Kontrol1ControlSurface.BUTTON_PAGE_RIGHT, new ModeMultiSelectCommand<> (this.model, surface, Modes.MODE_TRACK, Modes.MODE_VOLUME, Modes.MODE_DEVICE_PARAMS));
 
         this.addTriggerCommand (Commands.COMMAND_MASTERTRACK, Kontrol1ControlSurface.BUTTON_MAIN_ENCODER, new MainEncoderButtonCommand (this.model, surface));
 
@@ -203,11 +220,14 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
         this.addTriggerCommand (Commands.COMMAND_FADER_TOUCH_8, Kontrol1ControlSurface.TOUCH_ENCODER_8, new KnobRowTouchModeCommand<> (7, this.model, surface));
 
         // Block unused knobs and touches
-        this.addTriggerCommand (Commands.COMMAND_ROW1_1, Kontrol1ControlSurface.TOUCH_ENCODER_MAIN, new NopCommand<> (this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_ROW1_2, Kontrol1ControlSurface.BUTTON_INSTANCE, new NopCommand<> (this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_ROW1_3, Kontrol1ControlSurface.BUTTON_PRESET_UP, new NopCommand<> (this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_ROW1_4, Kontrol1ControlSurface.BUTTON_PRESET_DOWN, new NopCommand<> (this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_SHIFT, Kontrol1ControlSurface.BUTTON_SHIFT, new NopCommand<> (this.model, surface));
+        final NopCommand<Kontrol1ControlSurface, Kontrol1Configuration> nopCommand = new NopCommand<> (this.model, surface);
+        this.addTriggerCommand (Commands.COMMAND_ROW1_1, Kontrol1ControlSurface.TOUCH_ENCODER_MAIN, nopCommand);
+        this.addTriggerCommand (Commands.COMMAND_ROW1_2, Kontrol1ControlSurface.BUTTON_INSTANCE, nopCommand);
+        this.addTriggerCommand (Commands.COMMAND_ROW1_3, Kontrol1ControlSurface.BUTTON_PRESET_UP, nopCommand);
+        this.addTriggerCommand (Commands.COMMAND_ROW1_4, Kontrol1ControlSurface.BUTTON_PRESET_DOWN, nopCommand);
+        this.addTriggerCommand (Commands.COMMAND_ROW1_5, Kontrol1ControlSurface.BUTTON_OCTAVE_DOWN, nopCommand);
+        this.addTriggerCommand (Commands.COMMAND_ROW1_6, Kontrol1ControlSurface.BUTTON_OCTAVE_UP, nopCommand);
+        this.addTriggerCommand (Commands.COMMAND_SHIFT, Kontrol1ControlSurface.BUTTON_SHIFT, nopCommand);
     }
 
 
@@ -245,13 +265,27 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
     /**
      * Handle a track selection change.
      *
-     * @param index The index of the track
      * @param isSelected Has the track been selected?
      */
-    private void handleTrackChange (final int index, final boolean isSelected)
+    private void handleTrackChange (final boolean isSelected)
     {
-        if (isSelected)
-            this.updateIndication (this.getSurface ().getModeManager ().getActiveModeId ());
+        if (!isSelected)
+            return;
+
+        this.host.scheduleTask ( () -> {
+            final Kontrol1ControlSurface surface = this.getSurface ();
+            this.updateIndication (surface.getModeManager ().getActiveModeId ());
+            final View activeView = surface.getViewManager ().getActiveView ();
+            if (activeView != null)
+                activeView.updateNoteMapping ();
+
+            if (this.model.canSelectedTrackHoldNotes ())
+            {
+                final ICursorDevice primary = this.model.getInstrumentDevice ();
+                if (primary.hasDrumPads ())
+                    primary.getDrumPadBank ().scrollTo (0);
+            }
+        }, 100);
     }
 
 
@@ -268,7 +302,7 @@ public class Kontrol1ControllerSetup extends AbstractControllerSetup<Kontrol1Con
         final boolean isEffect = this.model.isEffectTrackBankActive ();
 
         final boolean isVolume = Modes.MODE_VOLUME.equals (mode);
-        final boolean isDevice = Modes.MODE_PARAMS.equals (mode);
+        final boolean isDevice = Modes.MODE_DEVICE_PARAMS.equals (mode);
 
         tb.setIndication (isVolume);
         if (tbe != null)

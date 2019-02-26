@@ -6,9 +6,9 @@ package de.mossgrabers.bitwig.framework.daw.data;
 
 import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.daw.IHost;
-import de.mossgrabers.framework.daw.ItemSelectionObserver;
 import de.mossgrabers.framework.daw.data.IMasterTrack;
 import de.mossgrabers.framework.daw.resource.ChannelType;
+import de.mossgrabers.framework.observer.ItemSelectionObserver;
 
 import com.bitwig.extension.controller.api.MasterTrack;
 
@@ -35,9 +35,17 @@ public class MasterTrackImpl extends TrackImpl implements IMasterTrack
      */
     public MasterTrackImpl (final IHost host, final IValueChanger valueChanger, final MasterTrack master)
     {
-        super (host, valueChanger, master, -1, 0, 0);
+        super (host, valueChanger, null, master, -1, 0, 0);
 
         this.track.addIsSelectedInEditorObserver (this::handleIsSelected);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void enter ()
+    {
+        // Mastertrack is not a group
     }
 
 

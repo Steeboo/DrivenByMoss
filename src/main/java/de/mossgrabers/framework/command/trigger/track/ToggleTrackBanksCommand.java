@@ -43,6 +43,7 @@ public class ToggleTrackBanksCommand<S extends IControlSurface<C>, C extends Con
 
         this.model.toggleCurrentTrackBank ();
         final ITrackBank currentTrackBank = this.model.getCurrentTrackBank ();
+        this.surface.getDisplay ().notify (this.model.isEffectTrackBankActive () ? "Effect Tracks" : "Audio & Instrument Tracks");
         if (currentTrackBank.getSelectedItem () == null)
             currentTrackBank.getItem (0).select ();
     }

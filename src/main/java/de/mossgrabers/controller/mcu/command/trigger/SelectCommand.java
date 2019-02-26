@@ -6,12 +6,12 @@ package de.mossgrabers.controller.mcu.command.trigger;
 
 import de.mossgrabers.controller.mcu.MCUConfiguration;
 import de.mossgrabers.controller.mcu.controller.MCUControlSurface;
-import de.mossgrabers.controller.mcu.mode.Modes;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
 import de.mossgrabers.framework.configuration.AbstractConfiguration;
 import de.mossgrabers.framework.controller.display.Display;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.ITrackBank;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.ButtonEvent;
 
 
@@ -75,7 +75,7 @@ public class SelectCommand extends AbstractTriggerCommand<MCUControlSurface, MCU
         {
             final MCUConfiguration configuration = this.surface.getConfiguration ();
             configuration.setNewClipLength (this.index);
-            display.notify ("New clip length: " + AbstractConfiguration.NEW_CLIP_LENGTH_VALUES[configuration.getNewClipLength ()]);
+            display.notify ("New clip length: " + AbstractConfiguration.getNewClipLengthValue (configuration.getNewClipLength ()));
             return;
         }
 
@@ -95,7 +95,7 @@ public class SelectCommand extends AbstractTriggerCommand<MCUControlSurface, MCU
     {
         if (event != ButtonEvent.DOWN || this.index >= 8)
             return;
-        this.surface.getDisplay ().notify (AbstractConfiguration.NEW_CLIP_LENGTH_VALUES[this.index]);
+        this.surface.getDisplay ().notify (AbstractConfiguration.getNewClipLengthValue (this.index));
         this.surface.getConfiguration ().setNewClipLength (this.index);
     }
 }

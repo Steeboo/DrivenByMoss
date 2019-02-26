@@ -9,7 +9,6 @@ import de.mossgrabers.controller.push.controller.PushColors;
 import de.mossgrabers.controller.push.controller.PushControlSurface;
 import de.mossgrabers.controller.push.controller.PushDisplay;
 import de.mossgrabers.controller.push.mode.BaseMode;
-import de.mossgrabers.controller.push.mode.Modes;
 import de.mossgrabers.framework.command.Commands;
 import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.controller.display.Display;
@@ -18,6 +17,7 @@ import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.graphics.display.DisplayModel;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.Pair;
 import de.mossgrabers.framework.utils.StringUtils;
@@ -98,7 +98,7 @@ public abstract class AbstractTrackMode extends BaseMode
             {
                 // If it is a group display child channels of group, otherwise toggle rec arm
                 if (selTrack.isGroup ())
-                    tb.selectChildren ();
+                    selTrack.enter ();
                 else
                     track.toggleRecArm ();
             }
@@ -444,7 +444,8 @@ public abstract class AbstractTrackMode extends BaseMode
         for (int i = 0; i < (isShiftPressed ? 4 : 3); i++)
         {
             final String sendName = tb.getEditSendName (sendOffset + i);
-            this.menu.get (4 + i).set (sendName.isEmpty () ? " " : sendName, Boolean.valueOf (4 + i == selectedMenu - 1));
+            final boolean exists = !sendName.isEmpty ();
+            this.menu.get (4 + i).set (exists ? sendName : " ", Boolean.valueOf (exists && 4 + i == selectedMenu - 1));
         }
 
         if (isShiftPressed)
@@ -452,5 +453,13 @@ public abstract class AbstractTrackMode extends BaseMode
 
         final boolean isUpAvailable = tb.hasParent ();
         this.menu.get (7).set (isUpAvailable ? "Up" : " ", Boolean.valueOf (isUpAvailable));
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected ITrackBank getBank ()
+    {
+        return this.model.getCurrentTrackBank ();
     }
 }

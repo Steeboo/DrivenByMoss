@@ -7,7 +7,6 @@ package de.mossgrabers.controller.apcmini.view;
 import de.mossgrabers.controller.apcmini.APCminiConfiguration;
 import de.mossgrabers.controller.apcmini.controller.APCminiColors;
 import de.mossgrabers.controller.apcmini.controller.APCminiControlSurface;
-import de.mossgrabers.controller.apcmini.mode.Modes;
 import de.mossgrabers.framework.command.trigger.transport.PlayCommand;
 import de.mossgrabers.framework.controller.grid.PadGrid;
 import de.mossgrabers.framework.daw.ICursorDevice;
@@ -20,11 +19,13 @@ import de.mossgrabers.framework.daw.ITransport;
 import de.mossgrabers.framework.daw.data.ISlot;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractView;
 import de.mossgrabers.framework.view.SceneView;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 import java.util.List;
 
@@ -204,22 +205,11 @@ public class ShiftView extends AbstractView<APCminiControlSurface, APCminiConfig
 
             // Device Parameters up/down
             case 24:
-            {
-                final IParameterBank parameterBank = cursorDevice.getParameterBank ();
-                if (parameterBank.canScrollBackwards ())
-                {
-                    parameterBank.scrollBackwards ();
-                    this.surface.getDisplay ().notify ("Bank: " + cursorDevice.getParameterPageBank ().getSelectedItem ());
-                }
+                this.scrollParameterBank (true, cursorDevice);
                 break;
-            }
+
             case 25:
-                final IParameterBank parameterBank = cursorDevice.getParameterBank ();
-                if (parameterBank.canScrollForwards ())
-                {
-                    parameterBank.scrollForwards ();
-                    this.surface.getDisplay ().notify ("Bank: " + cursorDevice.getParameterPageBank ().getSelectedItem ());
-                }
+                this.scrollParameterBank (false, cursorDevice);
                 break;
 
             // Device up/down
@@ -285,16 +275,16 @@ public class ShiftView extends AbstractView<APCminiControlSurface, APCminiConfig
         switch (index)
         {
             case 0:
-                tb.getSceneBank ().scrollPageBackwards ();
+                tb.getSceneBank ().selectPreviousPage ();
                 break;
             case 1:
-                tb.getSceneBank ().scrollPageForwards ();
+                tb.getSceneBank ().selectNextPage ();
                 break;
             case 2:
-                tb.scrollPageBackwards ();
+                tb.selectPreviousPage ();
                 break;
             case 3:
-                tb.scrollPageForwards ();
+                tb.selectNextPage ();
                 break;
 
             case 4:
@@ -326,7 +316,7 @@ public class ShiftView extends AbstractView<APCminiControlSurface, APCminiConfig
                 break;
 
             case 7:
-                if (modeManager.isActiveOrTempMode (Modes.MODE_DEVICE))
+                if (modeManager.isActiveOrTempMode (Modes.MODE_DEVICE_PARAMS))
                 {
                     this.model.getBrowser ().browseForPresets ();
                     final ViewManager viewManager = this.surface.getViewManager ();
@@ -336,10 +326,14 @@ public class ShiftView extends AbstractView<APCminiControlSurface, APCminiConfig
                 }
                 else
                 {
-                    modeManager.setActiveMode (Modes.MODE_DEVICE);
+                    modeManager.setActiveMode (Modes.MODE_DEVICE_PARAMS);
                     this.surface.getConfiguration ().setFaderCtrl ("Device");
                     this.surface.getDisplay ().notify ("Device");
                 }
+                break;
+
+            default:
+                // Not used
                 break;
         }
     }
@@ -398,16 +392,16 @@ public class ShiftView extends AbstractView<APCminiControlSurface, APCminiConfig
 
         final ITrackBank tb = this.model.getCurrentTrackBank ();
         final ISceneBank sceneBank = tb.getSceneBank ();
-        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON1, sceneBank.canScrollBackwards () ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
-        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON2, sceneBank.canScrollForwards () ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
-        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON3, tb.canScrollBackwards () ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
-        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON4, tb.canScrollForwards () ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
+        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON1, sceneBank.canScrollPageBackwards () ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
+        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON2, sceneBank.canScrollPageForwards () ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
+        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON3, tb.canScrollPageBackwards () ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
+        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON4, tb.canScrollPageForwards () ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
 
         final Integer mode = this.surface.getModeManager ().getActiveOrTempModeId ();
         this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON5, Modes.MODE_VOLUME.equals (mode) ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
         this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON6, Modes.MODE_PAN.equals (mode) ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
         this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON7, Modes.isSendMode (mode) ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
-        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON8, Modes.MODE_DEVICE.equals (mode) ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
+        this.surface.updateButton (APCminiControlSurface.APC_BUTTON_TRACK_BUTTON8, Modes.MODE_DEVICE_PARAMS.equals (mode) ? APCminiControlSurface.APC_BUTTON_STATE_ON : APCminiControlSurface.APC_BUTTON_STATE_OFF);
 
     }
 
@@ -448,5 +442,24 @@ public class ShiftView extends AbstractView<APCminiControlSurface, APCminiConfig
         final ViewManager viewManager = this.surface.getViewManager ();
         viewManager.setPreviousView (viewID);
         this.surface.getDisplay ().notify (viewManager.getView (viewID).getName ());
+    }
+
+
+    private void scrollParameterBank (final boolean scrollBack, final ICursorDevice cursorDevice)
+    {
+        final IParameterBank parameterBank = cursorDevice.getParameterBank ();
+        if (scrollBack)
+        {
+            if (!parameterBank.canScrollPageBackwards ())
+                return;
+            parameterBank.scrollBackwards ();
+        }
+        else
+        {
+            if (!parameterBank.canScrollPageForwards ())
+                return;
+            parameterBank.scrollForwards ();
+        }
+        this.surface.getDisplay ().notify ("Bank: " + cursorDevice.getParameterPageBank ().getSelectedItem ());
     }
 }

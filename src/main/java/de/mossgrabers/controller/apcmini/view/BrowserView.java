@@ -14,6 +14,7 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractView;
 import de.mossgrabers.framework.view.SceneView;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -119,6 +120,10 @@ public class BrowserView extends AbstractView<APCminiControlSurface, APCminiConf
                 break;
             case 5:
                 this.surface.sendMidiEvent (0x90, 84, velocity);
+                break;
+
+            default:
+                // Not used
                 break;
         }
 

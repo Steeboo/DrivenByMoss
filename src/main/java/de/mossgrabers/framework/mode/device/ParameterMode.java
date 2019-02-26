@@ -8,6 +8,7 @@ import de.mossgrabers.framework.configuration.Configuration;
 import de.mossgrabers.framework.controller.IControlSurface;
 import de.mossgrabers.framework.daw.ICursorDevice;
 import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.daw.IParameterBank;
 import de.mossgrabers.framework.daw.IParameterPageBank;
 import de.mossgrabers.framework.daw.data.IParameter;
 import de.mossgrabers.framework.mode.AbstractMode;
@@ -73,6 +74,18 @@ public class ParameterMode<S extends IControlSurface<C>, C extends Configuration
 
     /** {@inheritDoc} */
     @Override
+    public int getKnobValue (final int index)
+    {
+        final ICursorDevice cursorDevice = this.model.getCursorDevice ();
+        if (cursorDevice == null)
+            return -1;
+        final IParameter item = cursorDevice.getParameterBank ().getItem (index);
+        return item != null && item.doesExist () ? item.getValue () : -1;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
     public String getSelectedItemName ()
     {
         final ICursorDevice cursorDevice = this.model.getCursorDevice ();
@@ -125,6 +138,14 @@ public class ParameterMode<S extends IControlSurface<C>, C extends Configuration
     @Override
     public void selectItem (final int index)
     {
-        this.model.getCursorDevice ().getDeviceBank ().getItem (index).select ();
+        this.model.getCursorDevice ().getParameterBank ().selectItemAtPosition (index);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected IParameterBank getBank ()
+    {
+        return this.model.getCursorDevice ().getParameterBank ();
     }
 }

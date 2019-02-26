@@ -230,6 +230,10 @@ public class DeviceBrowserMode extends BaseMode
                     d.setBlock (i % 4, i / 4, text);
                 }
                 break;
+
+            default:
+                // Not used
+                break;
         }
         d.allDone ();
     }
@@ -285,7 +289,7 @@ public class DeviceBrowserMode extends BaseMode
                     {
                         final int pos = i * 6 + item;
                         items[item] = pos < results.length ? results[pos].getName (16) : "";
-                        selected[item] = pos < results.length ? results[pos].isSelected () : false;
+                        selected[item] = pos < results.length && results[pos].isSelected ();
                     }
                     message.addListElement (items, selected);
                 }
@@ -308,6 +312,10 @@ public class DeviceBrowserMode extends BaseMode
                     }
                     message.addListElement (items, selected);
                 }
+                break;
+
+            default:
+                // Not used
                 break;
         }
 
@@ -338,6 +346,56 @@ public class DeviceBrowserMode extends BaseMode
             this.surface.updateButton (102 + i, col != null && col.doesExist () ? AbstractMode.BUTTON_COLOR2_ON : AbstractMode.BUTTON_COLOR_OFF);
         }
         this.surface.updateButton (109, AbstractMode.BUTTON_COLOR2_ON);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void selectPreviousItem ()
+    {
+        this.resetFilterColumn ();
+        this.model.getBrowser ().previousContentType ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void selectNextItem ()
+    {
+        this.resetFilterColumn ();
+        this.model.getBrowser ().nextContentType ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasPreviousItem ()
+    {
+        return this.model.getBrowser ().hasPreviousContentType ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasNextItem ()
+    {
+        return this.model.getBrowser ().hasNextContentType ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasPreviousItemPage ()
+    {
+        return this.hasPreviousItem ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasNextItemPage ()
+    {
+        return this.hasNextItem ();
     }
 
 

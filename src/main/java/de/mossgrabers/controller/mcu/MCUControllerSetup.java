@@ -29,7 +29,6 @@ import de.mossgrabers.controller.mcu.controller.MCUControlSurface;
 import de.mossgrabers.controller.mcu.controller.MCUDisplay;
 import de.mossgrabers.controller.mcu.controller.MCUSegmentDisplay;
 import de.mossgrabers.controller.mcu.mode.MarkerMode;
-import de.mossgrabers.controller.mcu.mode.Modes;
 import de.mossgrabers.controller.mcu.mode.device.DeviceBrowserMode;
 import de.mossgrabers.controller.mcu.mode.device.DeviceParamsMode;
 import de.mossgrabers.controller.mcu.mode.track.MasterMode;
@@ -38,22 +37,21 @@ import de.mossgrabers.controller.mcu.mode.track.SendMode;
 import de.mossgrabers.controller.mcu.mode.track.TrackMode;
 import de.mossgrabers.controller.mcu.mode.track.VolumeMode;
 import de.mossgrabers.controller.mcu.view.ControlView;
-import de.mossgrabers.controller.mcu.view.Views;
 import de.mossgrabers.framework.command.Commands;
 import de.mossgrabers.framework.command.continuous.KnobRowModeCommand;
+import de.mossgrabers.framework.command.core.NopCommand;
 import de.mossgrabers.framework.command.trigger.BrowserCommand;
-import de.mossgrabers.framework.command.trigger.ButtonRowModeCommand;
-import de.mossgrabers.framework.command.trigger.DuplicateCommand;
 import de.mossgrabers.framework.command.trigger.MarkerCommand;
-import de.mossgrabers.framework.command.trigger.ModeSelectCommand;
-import de.mossgrabers.framework.command.trigger.MoveTrackBankCommand;
-import de.mossgrabers.framework.command.trigger.NopCommand;
+import de.mossgrabers.framework.command.trigger.application.DuplicateCommand;
 import de.mossgrabers.framework.command.trigger.application.LayoutCommand;
 import de.mossgrabers.framework.command.trigger.application.PaneCommand;
 import de.mossgrabers.framework.command.trigger.application.SaveCommand;
 import de.mossgrabers.framework.command.trigger.application.UndoCommand;
 import de.mossgrabers.framework.command.trigger.clip.NewCommand;
 import de.mossgrabers.framework.command.trigger.device.DeviceOnOffCommand;
+import de.mossgrabers.framework.command.trigger.mode.ButtonRowModeCommand;
+import de.mossgrabers.framework.command.trigger.mode.ModeSelectCommand;
+import de.mossgrabers.framework.command.trigger.track.MoveTrackBankCommand;
 import de.mossgrabers.framework.command.trigger.track.ToggleTrackBanksCommand;
 import de.mossgrabers.framework.command.trigger.track.ToggleVUCommand;
 import de.mossgrabers.framework.command.trigger.transport.MetronomeCommand;
@@ -78,6 +76,7 @@ import de.mossgrabers.framework.daw.ISendBank;
 import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.ITransport;
 import de.mossgrabers.framework.daw.ModelSetup;
+import de.mossgrabers.framework.daw.constants.TransportConstants;
 import de.mossgrabers.framework.daw.data.IMasterTrack;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.daw.midi.IMidiAccess;
@@ -85,8 +84,10 @@ import de.mossgrabers.framework.daw.midi.IMidiInput;
 import de.mossgrabers.framework.daw.midi.IMidiOutput;
 import de.mossgrabers.framework.mode.Mode;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.view.View;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -148,7 +149,7 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
         MODE_ACRONYMS.put (Modes.MODE_MASTER, "MT");
         MODE_ACRONYMS.put (Modes.MODE_DEVICE_PARAMS, "DC");
         MODE_ACRONYMS.put (Modes.MODE_BROWSER, "BR");
-        MODE_ACRONYMS.put (Modes.MODE_MARKER, "MK");
+        MODE_ACRONYMS.put (Modes.MODE_MARKERS, "MK");
 
     }
 
@@ -202,6 +203,7 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
 
         final ModelSetup ms = new ModelSetup ();
         ms.setNumTracks (adjustedNum);
+        ms.setNumScenes (0);
         ms.setNumFilterColumnEntries (8);
         ms.setNumResults (8);
         ms.setNumParams (adjustedNum);
@@ -212,7 +214,7 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
 
         final ITrackBank trackBank = this.model.getTrackBank ();
         trackBank.setIndication (true);
-        trackBank.addSelectionObserver (this::handleTrackChange);
+        trackBank.addSelectionObserver ( (index, isSelected) -> this.handleTrackChange (isSelected));
 
         this.model.getMasterTrack ().addSelectionObserver ( (index, isSelected) -> {
             final ModeManager modeManager = this.getSurface ().getModeManager ();
@@ -234,7 +236,7 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
         {
             final IMidiOutput output = midiAccess.createOutput (i);
             final IMidiInput input = midiAccess.createInput (i, null);
-            final MCUControlSurface surface = new MCUControlSurface (this.surfaces, this.model.getHost (), this.colorManager, this.configuration, output, input, 8 * (this.numMCUDevices - i - 1), i == 0);
+            final MCUControlSurface surface = new MCUControlSurface (this.surfaces, this.host, this.colorManager, this.configuration, output, input, 8 * (this.numMCUDevices - i - 1), i == 0);
             this.surfaces.add (surface);
             surface.setDisplay (new MCUDisplay (this.host, output, true, false));
             surface.setSecondDisplay (new MCUDisplay (this.host, output, false, i == 0));
@@ -263,7 +265,7 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
 
             modeManager.registerMode (Modes.MODE_DEVICE_PARAMS, new DeviceParamsMode (surface, this.model));
             modeManager.registerMode (Modes.MODE_BROWSER, new DeviceBrowserMode (surface, this.model));
-            modeManager.registerMode (Modes.MODE_MARKER, new MarkerMode (surface, this.model));
+            modeManager.registerMode (Modes.MODE_MARKERS, new MarkerMode (surface, this.model));
         }
     }
 
@@ -535,12 +537,12 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
         surface.updateButton (MCUControlSurface.MCU_F7, transport.isPunchOutEnabled () ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF);
 
         surface.updateButton (MCUControlSurface.MCU_READ, !writingArrangerAutomation ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF);
-        final int writeState = writingArrangerAutomation && ITransport.AUTOMATION_MODES_VALUES[2].equals (automationWriteMode) ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF;
+        final int writeState = writingArrangerAutomation && TransportConstants.AUTOMATION_MODES_VALUES[2].equals (automationWriteMode) ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF;
         surface.updateButton (MCUControlSurface.MCU_WRITE, writeState);
         surface.updateButton (MCUControlSurface.MCU_GROUP, writeState);
         surface.updateButton (MCUControlSurface.MCU_TRIM, transport.isWritingClipLauncherAutomation () ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF);
-        surface.updateButton (MCUControlSurface.MCU_TOUCH, writingArrangerAutomation && ITransport.AUTOMATION_MODES_VALUES[1].equals (automationWriteMode) ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF);
-        surface.updateButton (MCUControlSurface.MCU_LATCH, writingArrangerAutomation && ITransport.AUTOMATION_MODES_VALUES[0].equals (automationWriteMode) ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF);
+        surface.updateButton (MCUControlSurface.MCU_TOUCH, writingArrangerAutomation && TransportConstants.AUTOMATION_MODES_VALUES[1].equals (automationWriteMode) ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF);
+        surface.updateButton (MCUControlSurface.MCU_LATCH, writingArrangerAutomation && TransportConstants.AUTOMATION_MODES_VALUES[0].equals (automationWriteMode) ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF);
 
         final View view = surface.getViewManager ().getView (Views.VIEW_CONTROL);
         surface.updateButton (MCUControlSurface.MCU_REWIND, ((WindCommand<MCUControlSurface, MCUConfiguration>) view.getTriggerCommand (Commands.COMMAND_REWIND)).isRewinding () ? MCU_BUTTON_STATE_ON : MCU_BUTTON_STATE_OFF);
@@ -801,10 +803,9 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
     /**
      * Handle a track selection change.
      *
-     * @param index The index of the track
      * @param isSelected Has the track been selected?
      */
-    private void handleTrackChange (final int index, final boolean isSelected)
+    private void handleTrackChange (final boolean isSelected)
     {
         if (!isSelected)
             return;

@@ -13,6 +13,7 @@ import de.mossgrabers.framework.daw.INoteClip;
 import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.ModelSetup;
 import de.mossgrabers.framework.scale.Scales;
+import de.mossgrabers.framework.utils.FrameworkException;
 
 import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Arranger;
@@ -89,7 +90,7 @@ public class ModelImpl extends AbstractModel
 
         this.trackBank = new TrackBankImpl (this.host, valueChanger, tb, this.cursorTrack, numTracks, numScenes, numSends);
         final TrackBank effectTrackBank = controllerHost.createEffectTrackBank (numTracks, numScenes);
-        this.effectTrackBank = new EffectTrackBankImpl (this.host, valueChanger, effectTrackBank, this.cursorTrack, numTracks, numScenes, this.trackBank);
+        this.effectTrackBank = new EffectTrackBankImpl (this.host, valueChanger, this.cursorTrack, effectTrackBank, numTracks, numScenes, this.trackBank);
 
         final int numParams = this.modelSetup.getNumParams ();
         final int numDeviceLayers = this.modelSetup.getNumDeviceLayers ();
@@ -137,7 +138,7 @@ public class ModelImpl extends AbstractModel
     public IClip getClip ()
     {
         if (this.cursorClips.isEmpty ())
-            throw new RuntimeException ("No cursor clip created!");
+            throw new FrameworkException ("No cursor clip created!");
         return this.cursorClips.values ().iterator ().next ();
     }
 

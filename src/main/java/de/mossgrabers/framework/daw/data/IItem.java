@@ -4,7 +4,8 @@
 
 package de.mossgrabers.framework.daw.data;
 
-import de.mossgrabers.framework.daw.ObserverManagement;
+import de.mossgrabers.framework.observer.IValueObserver;
+import de.mossgrabers.framework.observer.ObserverManagement;
 
 
 /**
@@ -76,4 +77,12 @@ public interface IItem extends ObserverManagement
      * @return The name
      */
     String getName (int limit);
+
+
+    /**
+     * Add an observer for the name.
+     *
+     * @param observer The observer to notify on a name change
+     */
+    void addNameObserver (final IValueObserver<String> observer);
 }

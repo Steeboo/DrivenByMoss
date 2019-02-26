@@ -5,6 +5,7 @@
 package de.mossgrabers.controller.kontrol.usb.mki.mode;
 
 import de.mossgrabers.controller.kontrol.usb.mki.Kontrol1Configuration;
+import de.mossgrabers.controller.kontrol.usb.mki.controller.Kontrol1Colors;
 import de.mossgrabers.controller.kontrol.usb.mki.controller.Kontrol1ControlSurface;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.ITrackBank;
@@ -40,20 +41,20 @@ public abstract class AbstractKontrol1Mode extends AbstractMode<Kontrol1ControlS
         final ITrackBank tb = this.model.getCurrentTrackBank ();
         final ITrack t = tb.getSelectedItem ();
         final int selIndex = t != null ? t.getIndex () : -1;
-        final boolean canScrollLeft = selIndex > 0 || tb.canScrollBackwards ();
-        final boolean canScrollRight = selIndex >= 0 && selIndex < 7 && tb.getItem (selIndex + 1).doesExist () || tb.canScrollForwards ();
-        final boolean canScrollUp = tb.canScrollForwards ();
-        final boolean canScrollDown = tb.canScrollBackwards ();
+        final boolean canScrollLeft = selIndex > 0 || tb.canScrollPageBackwards ();
+        final boolean canScrollRight = selIndex >= 0 && selIndex < 7 && tb.getItem (selIndex + 1).doesExist () || tb.canScrollPageForwards ();
+        final boolean canScrollUp = tb.canScrollPageForwards ();
+        final boolean canScrollDown = tb.canScrollPageBackwards ();
 
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_LEFT, canScrollLeft ? Kontrol1ControlSurface.BUTTON_STATE_HI : Kontrol1ControlSurface.BUTTON_STATE_ON);
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_RIGHT, canScrollRight ? Kontrol1ControlSurface.BUTTON_STATE_HI : Kontrol1ControlSurface.BUTTON_STATE_ON);
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_UP, canScrollUp ? Kontrol1ControlSurface.BUTTON_STATE_HI : Kontrol1ControlSurface.BUTTON_STATE_ON);
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_DOWN, canScrollDown ? Kontrol1ControlSurface.BUTTON_STATE_HI : Kontrol1ControlSurface.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_LEFT, canScrollLeft ? Kontrol1Colors.BUTTON_STATE_HI : Kontrol1Colors.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_RIGHT, canScrollRight ? Kontrol1Colors.BUTTON_STATE_HI : Kontrol1Colors.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_UP, canScrollUp ? Kontrol1Colors.BUTTON_STATE_HI : Kontrol1Colors.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_DOWN, canScrollDown ? Kontrol1Colors.BUTTON_STATE_HI : Kontrol1Colors.BUTTON_STATE_ON);
 
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_BACK, t != null && t.isMute () ? Kontrol1ControlSurface.BUTTON_STATE_HI : Kontrol1ControlSurface.BUTTON_STATE_ON);
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_ENTER, t != null && t.isSolo () ? Kontrol1ControlSurface.BUTTON_STATE_HI : Kontrol1ControlSurface.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_BACK, t != null && t.isMute () ? Kontrol1Colors.BUTTON_STATE_HI : Kontrol1Colors.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_ENTER, t != null && t.isSolo () ? Kontrol1Colors.BUTTON_STATE_HI : Kontrol1Colors.BUTTON_STATE_ON);
 
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_BROWSE, Kontrol1ControlSurface.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_BROWSE, Kontrol1Colors.BUTTON_STATE_ON);
     }
 
 
@@ -85,7 +86,11 @@ public abstract class AbstractKontrol1Mode extends AbstractMode<Kontrol1ControlS
     public void onBack ()
     {
         final ITrack selectedTrack = this.model.getCurrentTrackBank ().getSelectedItem ();
-        if (selectedTrack != null)
+        if (selectedTrack == null)
+            return;
+        if (this.surface.isShiftPressed ())
+            selectedTrack.toggleMonitor ();
+        else
             selectedTrack.toggleMute ();
     }
 
@@ -95,7 +100,19 @@ public abstract class AbstractKontrol1Mode extends AbstractMode<Kontrol1ControlS
     public void onEnter ()
     {
         final ITrack selectedTrack = this.model.getCurrentTrackBank ().getSelectedItem ();
-        if (selectedTrack != null)
+        if (selectedTrack == null)
+            return;
+        if (this.surface.isShiftPressed ())
+            selectedTrack.toggleRecArm ();
+        else
             selectedTrack.toggleSolo ();
+    }
+
+
+    protected static String getSecondLineText (final ITrack track)
+    {
+        if (track.isMute ())
+            return "-MUTED-";
+        return track.isSolo () ? "-SOLO-" : track.getVolumeStr (8);
     }
 }

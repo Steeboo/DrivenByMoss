@@ -4,9 +4,9 @@
 
 package de.mossgrabers.controller.kontrol.usb.mki.mode.device;
 
+import de.mossgrabers.controller.kontrol.usb.mki.controller.Kontrol1Colors;
 import de.mossgrabers.controller.kontrol.usb.mki.controller.Kontrol1ControlSurface;
 import de.mossgrabers.controller.kontrol.usb.mki.mode.AbstractKontrol1Mode;
-import de.mossgrabers.controller.kontrol.usb.mki.view.Views;
 import de.mossgrabers.framework.command.Commands;
 import de.mossgrabers.framework.command.trigger.BrowserCommand;
 import de.mossgrabers.framework.controller.display.Display;
@@ -15,6 +15,7 @@ import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.data.IBrowserColumn;
 import de.mossgrabers.framework.daw.data.IBrowserColumnItem;
 import de.mossgrabers.framework.utils.StringUtils;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -260,15 +261,15 @@ public class BrowseMode extends AbstractKontrol1Mode
         final boolean canScrollLeft = browser.hasPreviousContentType ();
         final boolean canScrollRight = browser.hasNextContentType ();
 
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_LEFT, canScrollLeft ? Kontrol1ControlSurface.BUTTON_STATE_HI : Kontrol1ControlSurface.BUTTON_STATE_ON);
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_RIGHT, canScrollRight ? Kontrol1ControlSurface.BUTTON_STATE_HI : Kontrol1ControlSurface.BUTTON_STATE_ON);
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_UP, Kontrol1ControlSurface.BUTTON_STATE_OFF);
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_DOWN, Kontrol1ControlSurface.BUTTON_STATE_OFF);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_LEFT, canScrollLeft ? Kontrol1Colors.BUTTON_STATE_HI : Kontrol1Colors.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_RIGHT, canScrollRight ? Kontrol1Colors.BUTTON_STATE_HI : Kontrol1Colors.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_UP, Kontrol1Colors.BUTTON_STATE_OFF);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_NAVIGATE_DOWN, Kontrol1Colors.BUTTON_STATE_OFF);
 
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_BACK, Kontrol1ControlSurface.BUTTON_STATE_ON);
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_ENTER, Kontrol1ControlSurface.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_BACK, Kontrol1Colors.BUTTON_STATE_ON);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_ENTER, Kontrol1Colors.BUTTON_STATE_ON);
 
-        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_BROWSE, Kontrol1ControlSurface.BUTTON_STATE_HI);
+        this.surface.updateButton (Kontrol1ControlSurface.BUTTON_BROWSE, Kontrol1Colors.BUTTON_STATE_HI);
     }
 
 
