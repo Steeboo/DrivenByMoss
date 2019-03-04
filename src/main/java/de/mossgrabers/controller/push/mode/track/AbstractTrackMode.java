@@ -93,13 +93,10 @@ public abstract class AbstractTrackMode extends BaseMode
                 return;
             }
 
-            if (this.surface.isShiftPressed()) {
-        		
-                ITrackBank tracks = this.model.getAllTracks();
-                for (int i = 0; i < 100; i++ ) {
-                    tracks.getItem(i).setRecArm(false);
-                    track.setRecArm(true);
-                }
+            if (this.surface.isShiftPressed()) {                            
+                this.model.deactivateArm();
+                track.setRecArm(true);             
+                return;   
         	}
 
             final ITrack selTrack = tb.getSelectedItem ();
@@ -108,7 +105,7 @@ public abstract class AbstractTrackMode extends BaseMode
                 // If it is a group display child channels of group, otherwise toggle rec arm
                 if (selTrack.isGroup ())
                     selTrack.enter ();
-                else if (!this.surface.isShiftPressed())
+                else 
                     track.toggleRecArm ();
             }
             else
@@ -143,10 +140,18 @@ public abstract class AbstractTrackMode extends BaseMode
         final PushConfiguration config = this.surface.getConfiguration ();
         if (!this.isPush2 || config.isMuteLongPressed () || config.isSoloLongPressed () || config.isMuteSoloLocked ())
         {
-            if (config.isMuteState ())
+            if (config.isMuteState ()){
+                if (this.surface.isShiftPressed()){
+                    this.model.deactivateMute();
+                }            
                 track.toggleMute ();
-            else
+            }
+            else {
+                if (this.surface.isShiftPressed()){
+                    this.model.deactivateSolo();
+                }
                 track.toggleSolo ();
+            }
             return;
         }
 

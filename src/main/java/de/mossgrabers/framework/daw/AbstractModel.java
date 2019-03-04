@@ -209,12 +209,7 @@ public abstract class AbstractModel implements IModel
         return this.currentTrackBank;
     }
 
-    public ITrackBank getAllTracks ()
-    {
-        return this.allTracks;
-    }
-
-
+    
     /** {@inheritDoc} */
     @Override
     public ITrackBank getTrackBank ()

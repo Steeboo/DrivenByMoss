@@ -166,11 +166,7 @@ public interface IModel
      *
      * @return The track bank
      */
-    ITrackBank getTrackBank ();
-
-
-    
-    ITrackBank getAllTracks();
+    ITrackBank getTrackBank ();    
 
 
     /**
@@ -224,6 +220,10 @@ public interface IModel
      * Deactivate all mute states of all tracks.
      */
     void deactivateMute ();
+
+    
+    
+    void deactivateArm ();
 
 
     /**
