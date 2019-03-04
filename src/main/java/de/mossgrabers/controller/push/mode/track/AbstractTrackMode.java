@@ -64,7 +64,7 @@ public abstract class AbstractTrackMode extends BaseMode
         final ITrack track = tb.getItem (index);
 
         if (event == ButtonEvent.UP)
-        {
+        {        	        	
             if (this.surface.isPressed (PushControlSurface.PUSH_BUTTON_DUPLICATE))
             {
                 this.surface.setButtonConsumed (PushControlSurface.PUSH_BUTTON_DUPLICATE);
@@ -93,13 +93,22 @@ public abstract class AbstractTrackMode extends BaseMode
                 return;
             }
 
+            if (this.surface.isShiftPressed()) {
+        		
+                ITrackBank tracks = this.model.getAllTracks();
+                for (int i = 0; i < 100; i++ ) {
+                    tracks.getItem(i).setRecArm(false);
+                    track.setRecArm(true);
+                }
+        	}
+
             final ITrack selTrack = tb.getSelectedItem ();
             if (selTrack != null && selTrack.getIndex () == index)
             {
                 // If it is a group display child channels of group, otherwise toggle rec arm
                 if (selTrack.isGroup ())
                     selTrack.enter ();
-                else
+                else if (!this.surface.isShiftPressed())
                     track.toggleRecArm ();
             }
             else

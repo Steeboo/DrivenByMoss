@@ -112,6 +112,14 @@ public class ModelImpl extends AbstractModel
         this.masterTrackEqualsValue.markInterested ();
 
         this.currentTrackBank = this.trackBank;
+
+        TrackBank allTrackBank = controllerHost.createMainTrackBank (100, 0, 0);
+        this.allTracks = new TrackBankImpl (this.host, valueChanger, allTrackBank, this.cursorTrack, 100, 0, 0);
+        
+    }
+    
+    public ITrackBank getAllTracks() {    	
+       return this.allTracks;
     }
 
 

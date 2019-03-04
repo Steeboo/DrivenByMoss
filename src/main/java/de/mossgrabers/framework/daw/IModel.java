@@ -169,6 +169,10 @@ public interface IModel
     ITrackBank getTrackBank ();
 
 
+    
+    ITrackBank getAllTracks();
+
+
     /**
      * Get the effect track bank.
      *
