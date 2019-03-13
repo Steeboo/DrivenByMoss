@@ -122,7 +122,7 @@ public class ParameterMode<S extends IControlSurface<C>, C extends Configuration
     @Override
     public void selectPreviousItemPage ()
     {
-        this.model.getCursorDevice ().getParameterBank ().scrollBackwards ();
+        this.model.getCursorDevice ().getParameterBank ().selectPreviousPage ();
     }
 
 
@@ -130,7 +130,11 @@ public class ParameterMode<S extends IControlSurface<C>, C extends Configuration
     @Override
     public void selectNextItemPage ()
     {
-        this.model.getCursorDevice ().getParameterBank ().scrollForwards ();
+        if (this.model.getCursorDevice().isParameterPageSectionVisible()){
+            this.model.getCursorDevice ().getParameterBank ().selectNextPage();
+        } else {
+            this.model.getCursorDevice ().getDeviceBank ().selectNextPage ();
+        }
     }
 
 

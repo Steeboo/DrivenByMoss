@@ -197,6 +197,7 @@ public class PushControllerSetup extends AbstractControllerSetup<PushControlSurf
             ms.setNumResults (48);
         }
         ms.setNumMarkers (8);
+        ms.setNumParams(8);
         ms.setHasFlatTrackList (false);
         this.model = this.factory.createModel (this.colorManager, this.valueChanger, this.scales, ms);
 
@@ -634,8 +635,19 @@ public class PushControllerSetup extends AbstractControllerSetup<PushControlSurf
         }
 
         final INoteClip clip = activeView instanceof AbstractSequencerView && !(activeView instanceof ClipView) ? ((AbstractSequencerView<?, ?>) activeView).getClip () : null;
-        surface.updateButton (PushControlSurface.PUSH_BUTTON_DEVICE_LEFT, clip != null && clip.canScrollStepsBackwards () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
-        surface.updateButton (PushControlSurface.PUSH_BUTTON_DEVICE_RIGHT, clip != null && clip.canScrollStepsForwards () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+
+        // Enable In/Out buttons on push where needed
+        final ModeManager modeManager = surface.getModeManager ();
+        if (modeManager.isActiveOrTempMode (Modes.MODE_DEVICE_PARAMS))
+        {            
+            surface.updateButton (PushControlSurface.PUSH_BUTTON_DEVICE_LEFT, ColorManager.BUTTON_STATE_ON);
+            surface.updateButton (PushControlSurface.PUSH_BUTTON_DEVICE_RIGHT, ColorManager.BUTTON_STATE_ON);
+        } 
+        else 
+        {
+            surface.updateButton (PushControlSurface.PUSH_BUTTON_DEVICE_LEFT, clip != null && clip.canScrollStepsBackwards () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButton (PushControlSurface.PUSH_BUTTON_DEVICE_RIGHT, clip != null && clip.canScrollStepsForwards () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+        }
     }
 
 

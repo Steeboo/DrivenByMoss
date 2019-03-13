@@ -12,6 +12,7 @@ import de.mossgrabers.framework.daw.IParameterPageBank;
 import de.mossgrabers.framework.daw.data.IItem;
 import de.mossgrabers.framework.daw.data.IParameter;
 
+import com.bitwig.extension.controller.api.BooleanValue;
 import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 import com.bitwig.extension.controller.api.SettableIntegerValue;
 
@@ -42,7 +43,7 @@ public class ParameterBankImpl extends AbstractBank<IParameter> implements IPara
         this.pageBank = pageBank;
 
         this.valueChanger = valueChanger;
-        this.remoteControls = remoteControlsPage;
+        this.remoteControls = remoteControlsPage;        
 
         this.initItems ();
 
@@ -115,16 +116,22 @@ public class ParameterBankImpl extends AbstractBank<IParameter> implements IPara
     /** {@inheritDoc} */
     @Override
     public void selectPreviousPage ()
-    {
-        this.remoteControls.selectPreviousPage (false);
+    {        
+        for (int i = 0; i < this.pageSize; i++){
+            if (this.remoteControls.hasPrevious().get())
+            this.remoteControls.selectPreviousPage (false);
+        }        
     }
 
 
     /** {@inheritDoc} */
     @Override
     public void selectNextPage ()
-    {
-        this.remoteControls.selectNextPage (false);
+    {                
+        for (int i = 0; i < this.pageSize; i++){
+            if (this.remoteControls.hasNext().get())
+            this.remoteControls.selectNextPage (false);
+        }
     }
 
 

@@ -11,6 +11,7 @@ import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractSequencerView;
 import de.mossgrabers.framework.view.View;
+import de.mossgrabers.framework.mode.Mode;
 
 
 /**
@@ -38,7 +39,15 @@ public class PageLeftCommand extends AbstractTriggerCommand<PushControlSurface, 
     public void execute (final ButtonEvent event)
     {
         final View activeView = this.surface.getViewManager ().getActiveView ();
-        if (activeView instanceof AbstractSequencerView)
+        if (activeView instanceof AbstractSequencerView){
             ((AbstractSequencerView) activeView).onLeft (event);
+            return;
+        }
+
+        final Mode activeMode = this.surface.getModeManager ().getActiveOrTempMode ();
+        if (activeMode != null && event == ButtonEvent.UP){
+            activeMode.selectPreviousItemPage();
+            return;
+        }
     }
 }

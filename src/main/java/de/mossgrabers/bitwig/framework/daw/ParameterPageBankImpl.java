@@ -118,18 +118,22 @@ public class ParameterPageBankImpl implements IParameterPageBank
     /** {@inheritDoc} */
     @Override
     public void selectPreviousPage ()
-    {
-        final SettableIntegerValue index = this.remoteControls.selectedPageIndex ();
-        index.set (Math.max (index.get () - this.getPageSize (), 0));
+    {               
+        for (int i = 0; i < this.pageSize; i++){
+            if (this.remoteControls.hasPrevious().get())
+            this.remoteControls.selectPreviousPage (false);
+        }
     }
 
 
     /** {@inheritDoc} */
     @Override
     public void selectNextPage ()
-    {
-        final SettableIntegerValue index = this.remoteControls.selectedPageIndex ();
-        index.set (Math.min (index.get () + this.getPageSize (), this.pageNames.size () - 1));
+    {       
+        for (int i = 0; i < this.pageSize; i++){
+            if (this.remoteControls.hasNext().get())
+            this.remoteControls.selectNextPage (false);
+        }
     }
 
 

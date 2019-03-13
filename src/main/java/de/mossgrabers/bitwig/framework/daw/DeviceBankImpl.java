@@ -59,6 +59,20 @@ public class DeviceBankImpl extends AbstractBankImpl<DeviceBank, IDevice> implem
         this.cursorDevice.selectNext ();
     }
 
+    @Override
+    public void selectNextPage() {
+        for (int i = 0; i < this.pageSize; i++){
+            this.cursorDevice.selectNext ();
+        }
+    }
+
+    @Override
+    public void selectPreviousPage() {
+        for (int i = 0; i < this.pageSize; i++){
+            this.cursorDevice.selectPrevious ();
+        }
+    }
+
 
     /** {@inheritDoc} */
     @Override
