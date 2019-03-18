@@ -161,6 +161,18 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
         if (position >= 0 && position < this.getItemCount ())
             this.bank.scrollPosition ().set (position);
     }
+    
+    @Override
+    public void selectItemAtPosition(int position) {
+        if (position < 0 || position >= this.getItemCount ()){
+            this.host.println("returned doing nothing");
+            return;
+        }
+        this.scrollTo (position);    
+        this.getItem (position).select ();
+        //this.host.scheduleTask(() -> this.getItem (position).select (), 100);
+        
+    }
 
 
     /** {@inheritDoc} */

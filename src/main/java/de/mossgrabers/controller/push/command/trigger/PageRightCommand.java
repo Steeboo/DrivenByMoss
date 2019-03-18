@@ -38,12 +38,6 @@ public class PageRightCommand extends AbstractTriggerCommand<PushControlSurface,
     @Override
     public void execute (final ButtonEvent event)
     {
-        final View activeView = this.surface.getViewManager ().getActiveView ();
-        if (activeView instanceof AbstractSequencerView){
-            ((AbstractSequencerView) activeView).onRight (event);
-            return;
-        }
-
         final Mode activeMode = this.surface.getModeManager ().getActiveOrTempMode ();
 
         if (activeMode != null && event == ButtonEvent.UP){

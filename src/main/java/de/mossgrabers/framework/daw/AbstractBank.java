@@ -104,6 +104,9 @@ public abstract class AbstractBank<T extends IItem> implements IBank<T>
         if (position < 0 || position >= this.getItemCount ())
             return;
         this.scrollTo (position);
+
+        
+
         this.getItem (position % this.getPageSize ()).setSelected (true);
     }
 

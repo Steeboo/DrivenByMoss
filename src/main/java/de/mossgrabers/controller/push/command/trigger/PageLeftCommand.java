@@ -37,13 +37,7 @@ public class PageLeftCommand extends AbstractTriggerCommand<PushControlSurface, 
     @SuppressWarnings("rawtypes")
     @Override
     public void execute (final ButtonEvent event)
-    {
-        final View activeView = this.surface.getViewManager ().getActiveView ();
-        if (activeView instanceof AbstractSequencerView){
-            ((AbstractSequencerView) activeView).onLeft (event);
-            return;
-        }
-
+    {       
         final Mode activeMode = this.surface.getModeManager ().getActiveOrTempMode ();
         if (activeMode != null && event == ButtonEvent.UP){
             activeMode.selectPreviousItemPage();
