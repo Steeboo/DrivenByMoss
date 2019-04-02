@@ -4,6 +4,8 @@
 
 package de.mossgrabers.framework.command.trigger.mode;
 
+import de.mossgrabers.bitwig.framework.daw.TrackBankImpl;
+import de.mossgrabers.bitwig.framework.daw.data.SlotImpl;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
 import de.mossgrabers.framework.configuration.Configuration;
 import de.mossgrabers.framework.controller.IControlSurface;
@@ -11,6 +13,8 @@ import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.ISceneBank;
 import de.mossgrabers.framework.daw.ITrackBank;
+import de.mossgrabers.framework.daw.data.ISlot;
+import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.mode.Mode;
 import de.mossgrabers.framework.utils.ButtonEvent;
 
@@ -134,29 +138,28 @@ public class CursorCommand<S extends IControlSurface<C>, C extends Configuration
     {
         final ITrackBank tb = this.model.getCurrentTrackBank ();
         final ISceneBank sceneBank = tb.getSceneBank ();
-        this.canScrollUp = sceneBank.canScrollPageBackwards ();
-        this.canScrollDown = sceneBank.canScrollPageForwards ();
+        this.canScrollUp = true;
+        this.canScrollDown = true;
 
         final Mode mode = this.surface.getModeManager ().getActiveOrTempMode ();
         final boolean shiftPressed = this.surface.isShiftPressed ();
-        this.canScrollLeft = mode != null && (shiftPressed ? mode.hasPreviousItemPage () : mode.hasPreviousItem ());
-        this.canScrollRight = mode != null && (shiftPressed ? mode.hasNextItemPage () : mode.hasNextItem ());
+        this.canScrollLeft = true;
+        this.canScrollRight = true;
     }
-
 
     /**
      * Scroll left. Tracks, devices or parameter banks.
      */
     protected void scrollLeft ()    
-    {
-        int position = this.model.getSelectedTrack().getSlotBank ().getSelectedItem().getIndex();
-        this.model.getTrackBank().selectPreviousItem();
-        this.model.getSelectedTrack().getSlotBank().selectItemAtPosition(position);
-        //this.surface.scheduleTask ( () -> this.model.getSelectedTrack().getSlotBank().selectItemAtPosition(position), 100);
-        
-        // final Mode activeMode = this.surface.getModeManager ().getActiveOrTempMode ();
-        // if (activeMode != null)
-        //     activeMode.selectPreviousItem ();
+    {           
+        final ISlot selectedSlot = this.model.getSelectedSlot();
+        if (selectedSlot != null){           
+            final int selectedSlotPos = this.model.getSelectedSlot().getPosition();
+            this.model.getTrackBank().selectPreviousItem();              
+            this.surface.scheduleTask ( () -> this.model.getSelectedTrack().getSlotBank().getItem(selectedSlotPos).select(), 45);
+        } else {
+            this.model.getTrackBank().selectPreviousItem();
+        }
     }
 
 
@@ -165,14 +168,14 @@ public class CursorCommand<S extends IControlSurface<C>, C extends Configuration
      */
     protected void scrollRight ()
     {
-        int position = this.model.getSelectedTrack().getSlotBank ().getSelectedItem().getIndex();
-        this.model.getTrackBank().selectNextItem();
-
-        this.surface.scheduleTask ( () -> this.model.getSelectedTrack().getSlotBank().selectItemAtPosition(position), 100);
-        
-        // final Mode activeMode = this.surface.getModeManager ().getActiveOrTempMode ();
-        // if (activeMode != null)
-        //     activeMode.selectNextItem ();
+        final ISlot selectedSlot = this.model.getSelectedSlot();
+        if (selectedSlot != null){           
+             final int selectedSlotPos = this.model.getSelectedSlot().getPosition();
+             this.model.getTrackBank().selectNextItem();           
+             this.surface.scheduleTask ( () -> this.model.getSelectedTrack().getSlotBank().getItem(selectedSlotPos).select(), 45);
+        } else {
+            this.model.getTrackBank().selectNextItem();
+        }
     }
 
 
@@ -182,12 +185,6 @@ public class CursorCommand<S extends IControlSurface<C>, C extends Configuration
     protected void scrollUp ()
     {
         this.model.getSelectedTrack().getSlotBank ().selectPreviousItem(); 
-
-        // final ISceneBank sceneBank = this.model.getCurrentTrackBank ().getSceneBank ();
-        // if (this.surface.isShiftPressed ())
-        //     sceneBank.selectPreviousPage ();
-        // else
-        //     sceneBank.scrollBackwards ();
     }
 
 
@@ -197,11 +194,5 @@ public class CursorCommand<S extends IControlSurface<C>, C extends Configuration
     protected void scrollDown ()
     {            
         this.model.getSelectedTrack().getSlotBank ().selectNextItem();        
-
-        // final ISceneBank sceneBank = this.model.getCurrentTrackBank ().getSceneBank ();
-        // if (this.surface.isShiftPressed ())
-        //     sceneBank.selectNextPage ();
-        // else
-        //     sceneBank.scrollForwards ();
     }
 }

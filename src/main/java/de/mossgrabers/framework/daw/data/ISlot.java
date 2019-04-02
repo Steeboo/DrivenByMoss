@@ -58,6 +58,8 @@ public interface ISlot extends IItem
      */
     boolean isStopQueued ();
 
+    int getTrackPosition();
+
 
     /**
      * Get the color of the slot.

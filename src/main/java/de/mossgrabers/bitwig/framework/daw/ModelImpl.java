@@ -11,7 +11,10 @@ import de.mossgrabers.framework.daw.AbstractModel;
 import de.mossgrabers.framework.daw.IClip;
 import de.mossgrabers.framework.daw.INoteClip;
 import de.mossgrabers.framework.daw.ISceneBank;
+import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.ModelSetup;
+import de.mossgrabers.framework.daw.data.ISlot;
+import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.utils.FrameworkException;
 
@@ -123,7 +126,7 @@ public class ModelImpl extends AbstractModel
         this.currentTrackBank = this.trackBank;
 
         //TrackBank allTrackBank = controllerHost.createMainTrackBank (100, 0, 0);
-        //this.allTracks = new TrackBankImpl (this.host, valueChanger, allTrackBank, this.cursorTrack, 100, 0, 0);
+        this.allTracks = new TrackBankImpl (this.host, valueChanger, this.allTrackBank, this.cursorTrack, 100, 0, 0);
         
     }
 
@@ -211,4 +214,29 @@ public class ModelImpl extends AbstractModel
     {
         this.getNoteClip (0, 0);
     }
+
+    // @Override
+    // public ISlot getSelectedSlot ()
+    // {
+    //     ITrack track = this.getSelectedTrack ();
+    //     final ITrackBank tb = this.getCurrentTrackBank();
+
+    //     if (track == null) return null;
+
+    //     ISlot result = track.getSlotBank ().getSelectedItem ();
+    //     if (result == null){
+    //         for (int i = 0; i < tb.getPositionOfLastItem(); i++){
+    //             track = tb.getItem(i);
+    //             if (track != null){
+    //                 ISlot selected = track.getSlotBank ().getSelectedItem ();
+    //                 if (selected != null){
+    //                     result = selected;
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //      } 
+    //     return result;
+    // }
+
 }

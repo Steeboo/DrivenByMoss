@@ -92,6 +92,11 @@ public class SlotImpl extends AbstractItemImpl implements ISlot
         return this.slot.sceneIndex ().get ();
     }
 
+    @Override
+    public int getTrackPosition(){
+        return this.track.getPosition();
+    }
+
 
     /** {@inheritDoc} */
     @Override
