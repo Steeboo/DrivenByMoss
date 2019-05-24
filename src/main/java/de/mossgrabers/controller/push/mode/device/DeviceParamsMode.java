@@ -1,4 +1,4 @@
-// Written by Jürgen Moßgraber - mossgrabers.de
+﻿// Written by Jürgen Moßgraber - mossgrabers.de
 // (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
@@ -28,6 +28,7 @@ import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.StringUtils;
 import de.mossgrabers.framework.view.View;
+import de.mossgrabers.framework.controller.color.ColorManager;
 
 
 /**
@@ -42,7 +43,7 @@ public class DeviceParamsMode extends BaseMode
         "On",
         "Parameters",
         "Expanded",
-        null,
+        "ARM",
         "Banks",
         "Pin Device",
         "Window",
@@ -244,10 +245,9 @@ public class DeviceParamsMode extends BaseMode
             final IParameterPageBank bank = cd.getParameterPageBank ();
             final int selectedItemIndex = bank.getSelectedItemIndex ();
             for (int i = 0; i < bank.getPageSize (); i++)
-                this.surface.updateButton (20 + i, !bank.getItem (i).isEmpty () ? i == selectedItemIndex ? selectedColor : existsColor : offColor);
+                this.surface.updateButton (20 + i, !bank.getItem (i).isEmpty () ? i == selectedItemIndex ? selectedColor : existsColor : offColor);                   
         }
-    }
-
+    }   
 
     /** {@inheritDoc} */
     @Override
@@ -269,6 +269,17 @@ public class DeviceParamsMode extends BaseMode
             case 2:
                 if (device.doesExist ())
                     device.toggleExpanded ();
+                break;
+            case 3:
+                if (device.doesExist ()){
+                 
+                    if(this.surface.isShiftPressed()){
+                        this.model.deactivateArm();
+                        this.model.getSelectedTrack().setRecArm(true);
+                    } else {
+                        this.model.getSelectedTrack().toggleRecArm();
+                    }
+                }
                 break;
             case 4:
                 if (device.doesExist ())
@@ -311,11 +322,14 @@ public class DeviceParamsMode extends BaseMode
         final int orange = this.isPush2 ? PushColors.PUSH2_COLOR2_ORANGE : PushColors.PUSH1_COLOR2_ORANGE;
         final int off = this.isPush2 ? PushColors.PUSH2_COLOR_BLACK : PushColors.PUSH1_COLOR_BLACK;
         final int turquoise = this.isPush2 ? PushColors.PUSH2_COLOR2_TURQUOISE_HI : PushColors.PUSH1_COLOR2_TURQUOISE_HI;
+        final int yellow = this.isPush2 ? PushColors.PUSH2_COLOR_YELLOW_LO : PushColors.PUSH1_COLOR_YELLOW_LO;
+        final int red = this.isPush2 ? PushColors.PUSH2_COLOR2_RED_HI : PushColors.PUSH1_COLOR2_RED_HI;
+
 
         this.surface.updateButton (102, cd.isEnabled () ? green : grey);
         this.surface.updateButton (103, cd.isParameterPageSectionVisible () ? orange : white);
         this.surface.updateButton (104, cd.isExpanded () ? orange : white);
-        this.surface.updateButton (105, off);
+        this.surface.updateButton (105, this.model.getSelectedTrack().isRecArm() ? red : yellow);
         this.surface.updateButton (106, this.showDevices ? white : orange);
         this.surface.updateButton (107, this.model.getHost ().hasPinning () ? cd.isPinned () ? turquoise : grey : off);
         this.surface.updateButton (108, cd.isWindowOpen () ? turquoise : grey);
@@ -372,7 +386,7 @@ public class DeviceParamsMode extends BaseMode
             {
                 final String item = bank.getItem (i);
                 d.setCell (3, i, !item.isEmpty () ? (i == selectedItemIndex ? PushDisplay.SELECT_ARROW : "") + item : "");
-            }
+            }            
         }
 
         d.allDone ();
