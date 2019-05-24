@@ -206,7 +206,7 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
         if (!this.canScrollPageBackwards ())
             return;
         this.scrollPageBackwards ();
-        this.host.scheduleTask ( () -> this.getItem (this.pageSize - 1).select (), 10);
+        this.host.scheduleTask ( () -> this.getItem (this.pageSize - 1).select (), 20);
     }
 
 
@@ -217,7 +217,7 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
         if (!this.canScrollPageForwards ())
             return;
         this.scrollPageForwards ();
-        this.host.scheduleTask ( () -> this.getItem (0).select (), 10);
+        this.host.scheduleTask ( () -> this.getItem (0).select (), 20);
     }
 
 

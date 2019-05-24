@@ -295,8 +295,15 @@ public class DeviceParamsMode extends BaseMode
                     device.toggleExpanded ();
                 break;
             case 3:
-                if (device.doesExist ())
-                    this.model.getSelectedTrack().toggleRecArm();
+                if (device.doesExist ()){
+                 
+                    if(this.surface.isShiftPressed()){
+                        this.model.deactivateArm();
+                        this.model.getSelectedTrack().setRecArm(true);
+                    } else {
+                        this.model.getSelectedTrack().toggleRecArm();
+                    }
+                }
                 break;
             case 4:
                 if (device.doesExist ())

@@ -156,7 +156,7 @@ public class CursorCommand<S extends IControlSurface<C>, C extends Configuration
         if (selectedSlot != null){           
             final int selectedSlotPos = this.model.getSelectedSlot().getPosition();
             this.model.getTrackBank().selectPreviousItem();              
-            this.surface.scheduleTask ( () -> this.model.getSelectedTrack().getSlotBank().getItem(selectedSlotPos).select(), 45);
+            this.surface.scheduleTask ( () -> this.model.getSelectedTrack().getSlotBank().getItem(selectedSlotPos).select(), 55);
         } else {
             this.model.getTrackBank().selectPreviousItem();
         }
@@ -172,7 +172,7 @@ public class CursorCommand<S extends IControlSurface<C>, C extends Configuration
         if (selectedSlot != null){           
              final int selectedSlotPos = this.model.getSelectedSlot().getPosition();
              this.model.getTrackBank().selectNextItem();           
-             this.surface.scheduleTask ( () -> this.model.getSelectedTrack().getSlotBank().getItem(selectedSlotPos).select(), 45);
+             this.surface.scheduleTask ( () -> this.model.getSelectedTrack().getSlotBank().getItem(selectedSlotPos).select(), 55);
         } else {
             this.model.getTrackBank().selectNextItem();
         }
