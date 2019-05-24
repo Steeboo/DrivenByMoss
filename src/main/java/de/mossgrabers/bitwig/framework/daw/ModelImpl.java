@@ -143,7 +143,7 @@ public class ModelImpl extends AbstractModel
     {
         for (int i = 0; i < ALL_TRACKS; i++)
         {
-            if (this.muteSoloTrackBank.getItemAt (i).solo ().get ())
+            if (this.allTrackBank.getItemAt (i).solo ().get ())
                 return true;
         }
         return false;
