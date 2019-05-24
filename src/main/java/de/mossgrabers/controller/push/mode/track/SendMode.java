@@ -1,11 +1,10 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode.track;
 
 import de.mossgrabers.controller.push.controller.PushControlSurface;
-import de.mossgrabers.controller.push.mode.Modes;
 import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.controller.display.Display;
 import de.mossgrabers.framework.controller.display.Format;
@@ -14,6 +13,8 @@ import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.data.ISend;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.graphics.display.DisplayModel;
+import de.mossgrabers.framework.graphics.grid.SendData;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.Pair;
 
 
@@ -32,13 +33,13 @@ public class SendMode extends AbstractTrackMode
      */
     public SendMode (final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Send", surface, model);
     }
 
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnob (final int index, final int value)
+    public void onKnobValue (final int index, final int value)
     {
         this.model.getCurrentTrackBank ().getItem (index).getSendBank ().getItem (this.getCurrentSendIndex ()).changeValue (value);
     }
@@ -46,7 +47,7 @@ public class SendMode extends AbstractTrackMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnobTouch (final int index, final boolean isTouched)
+    public void onKnobTouch (final int index, final boolean isTouched)
     {
         final int sendIndex = this.getCurrentSendIndex ();
 
@@ -54,14 +55,10 @@ public class SendMode extends AbstractTrackMode
 
         final ITrack t = this.model.getCurrentTrackBank ().getItem (index);
         final ISend send = t.getSendBank ().getItem (sendIndex);
-        if (isTouched)
+        if (isTouched && this.surface.isDeletePressed ())
         {
-            if (this.surface.isDeletePressed ())
-            {
-                this.surface.setButtonConsumed (this.surface.getDeleteButtonId ());
-                send.resetValue ();
-                return;
-            }
+            this.surface.setButtonConsumed (this.surface.getDeleteButtonId ());
+            send.resetValue ();
         }
 
         send.touchValue (isTouched);
@@ -111,24 +108,16 @@ public class SendMode extends AbstractTrackMode
         for (int i = 0; i < 8; i++)
         {
             final ITrack t = tb.getItem (i);
-            final String [] sendName = new String [4];
-            final String [] valueStr = new String [4];
-            final int [] value = new int [4];
-            final int [] modulatedValue = new int [4];
-            final boolean [] selected = new boolean [4];
+            final SendData [] sendData = new SendData [4];
             for (int j = 0; j < 4; j++)
             {
                 final int sendPos = sendOffset + j;
                 final ISend send = t.getSendBank ().getItem (sendPos);
                 final boolean exists = send != null && send.doesExist ();
-                sendName[j] = exists ? send.getName () : " ";
-                valueStr[j] = exists && sendIndex == sendPos && this.isKnobTouched[i] ? send.getDisplayedValue (8) : "";
-                value[j] = valueChanger.toDisplayValue (exists ? send.getValue () : -1);
-                modulatedValue[j] = valueChanger.toDisplayValue (exists ? send.getModulatedValue () : -1);
-                selected[j] = sendIndex == sendPos;
+                sendData[j] = new SendData (exists ? send.getName () : " ", exists && sendIndex == sendPos && this.isKnobTouched[i] ? send.getDisplayedValue (8) : "", valueChanger.toDisplayValue (exists ? send.getValue () : -1), valueChanger.toDisplayValue (exists ? send.getModulatedValue () : -1), sendIndex == sendPos);
             }
             final Pair<String, Boolean> pair = this.menu.get (i);
-            message.addSendsElement (pair.getKey (), pair.getValue ().booleanValue (), t.doesExist () ? t.getName () : "", t.getType (), t.getColor (), t.isSelected (), sendName, valueStr, value, modulatedValue, selected, false);
+            message.addSendsElement (pair.getKey (), pair.getValue ().booleanValue (), t.doesExist () ? t.getName () : "", t.getType (), t.getColor (), t.isSelected (), sendData, false);
         }
         message.send ();
     }

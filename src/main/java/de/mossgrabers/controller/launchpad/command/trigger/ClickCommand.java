@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.launchpad.command.trigger;
@@ -12,7 +12,7 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 
 
 /**
- * Command to dis-/enable the metronome. Also toggles metronome ticks when Shift is pressed.
+ * Command to dis-/enable the metronome. Tap tempo when Shift is pressed.
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */

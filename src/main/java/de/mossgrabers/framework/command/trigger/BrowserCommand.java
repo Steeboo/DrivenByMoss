@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.trigger;
@@ -47,13 +47,8 @@ public class BrowserCommand<S extends IControlSurface<C>, C extends Configuratio
     @Override
     public void executeNormal (final ButtonEvent event)
     {
-        if (event != ButtonEvent.UP)
-            return;
-
-        if (this.surface.isSelectPressed ())
-            this.startBrowser (true, false);
-        else
-            this.startBrowser (false, false);
+        if (event == ButtonEvent.UP)
+            this.startBrowser (this.surface.isSelectPressed (), false);
     }
 
 

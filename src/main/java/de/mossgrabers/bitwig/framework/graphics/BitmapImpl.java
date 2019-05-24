@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.graphics;
@@ -54,9 +54,7 @@ public class BitmapImpl implements IBitmap
     @Override
     public void render (final IRenderer renderer)
     {
-        this.bitmap.render (gc -> {
-            renderer.render (new GraphicsContextImpl (gc));
-        });
+        this.bitmap.render (gc -> renderer.render (new GraphicsContextImpl (gc)));
     }
 
 

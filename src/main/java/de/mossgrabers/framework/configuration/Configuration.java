@@ -1,10 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.configuration;
 
 import de.mossgrabers.framework.configuration.AbstractConfiguration.BehaviourOnStop;
+import de.mossgrabers.framework.observer.SettingObserver;
 
 
 /**
@@ -265,4 +266,20 @@ public interface Configuration
      * @return The functionality of the footswitch 2.
      */
     int getFootswitch2 ();
+
+
+    /**
+     * Get the change value for normal knob speed.
+     *
+     * @return The value in the range of 1-100%
+     */
+    int getKnobSpeedNormal ();
+
+
+    /**
+     * Get the change value for slow knob speed.
+     *
+     * @return The value in the range of 1-100%
+     */
+    int getKnobSpeedSlow ();
 }

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode.device;
@@ -9,7 +9,6 @@ import de.mossgrabers.controller.push.controller.PushColors;
 import de.mossgrabers.controller.push.controller.PushControlSurface;
 import de.mossgrabers.controller.push.controller.PushDisplay;
 import de.mossgrabers.controller.push.mode.BaseMode;
-import de.mossgrabers.controller.push.mode.Modes;
 import de.mossgrabers.framework.command.Commands;
 import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.controller.display.Display;
@@ -24,7 +23,9 @@ import de.mossgrabers.framework.daw.data.ISend;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.daw.resource.ChannelType;
 import de.mossgrabers.framework.graphics.display.DisplayModel;
+import de.mossgrabers.framework.graphics.grid.SendData;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.Pair;
 import de.mossgrabers.framework.utils.StringUtils;
@@ -46,12 +47,13 @@ public class DeviceLayerMode extends BaseMode
     /**
      * Constructor.
      *
+     * @param name The name of the mode
      * @param surface The control surface
      * @param model The model
      */
-    public DeviceLayerMode (final PushControlSurface surface, final IModel model)
+    public DeviceLayerMode (final String name, final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super (name, surface, model);
         this.isTemporary = false;
 
         for (int i = 0; i < 8; i++)
@@ -61,7 +63,7 @@ public class DeviceLayerMode extends BaseMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnob (final int index, final int value)
+    public void onKnobValue (final int index, final int value)
     {
         final ICursorDevice cd = this.model.getCursorDevice ();
         final IChannel channel = cd.getLayerOrDrumPadBank ().getSelectedItem ();
@@ -87,7 +89,7 @@ public class DeviceLayerMode extends BaseMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnobTouch (final int index, final boolean isTouched)
+    public void onKnobTouch (final int index, final boolean isTouched)
     {
         final ICursorDevice cd = this.model.getCursorDevice ();
         final IChannel channel = cd.getLayerOrDrumPadBank ().getSelectedItem ();
@@ -425,24 +427,16 @@ public class DeviceLayerMode extends BaseMode
             else if (sendsIndex == i && l != null)
             {
                 final ITrackBank fxTrackBank = this.model.getEffectTrackBank ();
-                final String [] sendName = new String [4];
-                final String [] valueStr = new String [4];
-                final int [] value = new int [4];
-                final int [] modulatedValue = new int [4];
-                final boolean [] selected = new boolean [4];
+                final SendData [] sendData = new SendData [4];
                 for (int j = 0; j < 4; j++)
                 {
                     final int sendOffset = config.isSendsAreToggled () ? 4 : 0;
                     final int sendPos = sendOffset + j;
                     final ISend send = l.getSendBank ().getItem (sendPos);
-                    sendName[j] = fxTrackBank == null ? send.getName () : fxTrackBank.getItem (sendPos).getName ();
                     final boolean doesExist = send.doesExist ();
-                    valueStr[j] = doesExist && this.isKnobTouched[4 + j] ? send.getDisplayedValue () : "";
-                    value[j] = doesExist ? send.getValue () : 0;
-                    modulatedValue[j] = doesExist ? send.getModulatedValue () : 0;
-                    selected[j] = true;
+                    sendData[j] = new SendData (fxTrackBank == null ? send.getName () : fxTrackBank.getItem (sendPos).getName (), doesExist && this.isKnobTouched[4 + j] ? send.getDisplayedValue () : "", doesExist ? send.getValue () : 0, doesExist ? send.getModulatedValue () : 0, true);
                 }
-                message.addSendsElement (topMenu, isTopMenuOn, layer.doesExist () ? layer.getName () : "", ChannelType.LAYER, bank.getItem (offset + i).getColor (), layer.isSelected (), sendName, valueStr, value, modulatedValue, selected, true);
+                message.addSendsElement (topMenu, isTopMenuOn, layer.doesExist () ? layer.getName () : "", ChannelType.LAYER, bank.getItem (offset + i).getColor (), layer.isSelected (), sendData, true);
             }
             else
                 message.addChannelSelectorElement (topMenu, isTopMenuOn, bottomMenu, ChannelType.LAYER, bottomMenuColor, isBottomMenuOn);
@@ -617,7 +611,7 @@ public class DeviceLayerMode extends BaseMode
         if (!cd.hasLayers ())
         {
             this.disableSecondRow ();
-            this.surface.updateButton (109, this.isPush2 ? PushColors.PUSH2_COLOR2_WHITE : PushColors.PUSH1_COLOR2_WHITE);
+            this.surface.updateButton (109, PushColors.PUSH1_COLOR2_WHITE);
             return;
         }
 
@@ -671,5 +665,14 @@ public class DeviceLayerMode extends BaseMode
                 return 8;
         }
         return 0;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected IChannelBank<?> getBank ()
+    {
+        final ICursorDevice cursorDevice = this.model.getCursorDevice ();
+        return cursorDevice == null ? null : cursorDevice.getLayerOrDrumPadBank ();
     }
 }

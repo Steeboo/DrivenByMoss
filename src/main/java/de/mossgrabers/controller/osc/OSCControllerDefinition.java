@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.osc;
@@ -24,6 +24,6 @@ public class OSCControllerDefinition extends DefaultControllerDefinition
      */
     public OSCControllerDefinition ()
     {
-        super ("", "Jürgen Moßgraber", "6.11", EXTENSION_ID, "OSC", "Open Sound Control", 1, 0);
+        super (EXTENSION_ID, "OSC", "Open Sound Control", 1, 0);
     }
 }

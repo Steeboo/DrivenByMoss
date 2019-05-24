@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller.grid;
@@ -17,22 +17,22 @@ import java.util.Arrays;
  */
 public class PadGridImpl implements PadGrid
 {
-    protected final static int NUM_NOTES = 128;
+    protected static final int   NUM_NOTES = 128;
 
-    protected IMidiOutput      output;
-    protected ColorManager     colorManager;
+    protected final IMidiOutput  output;
+    protected final ColorManager colorManager;
 
-    protected final int []     currentButtonColors;
-    protected final int []     buttonColors;
-    protected final int []     currentBlinkColors;
-    protected final int []     blinkColors;
-    protected final boolean [] currentBlinkFast;
-    protected final boolean [] blinkFast;
+    protected final int []       currentButtonColors;
+    protected final int []       buttonColors;
+    protected final int []       currentBlinkColors;
+    protected final int []       blinkColors;
+    protected final boolean []   currentBlinkFast;
+    protected final boolean []   blinkFast;
 
-    private final int          rows;
-    private final int          cols;
-    private final int          startNote;
-    private final int          endNote;
+    private final int            rows;
+    private final int            cols;
+    private final int            startNote;
+    private final int            endNote;
 
 
     /**

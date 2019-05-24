@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw.data;
@@ -7,6 +7,7 @@ package de.mossgrabers.bitwig.framework.daw.data;
 import de.mossgrabers.framework.daw.data.AbstractItemImpl;
 import de.mossgrabers.framework.daw.data.IBrowserColumn;
 import de.mossgrabers.framework.daw.data.IBrowserColumnItem;
+import de.mossgrabers.framework.observer.IValueObserver;
 
 import com.bitwig.extension.controller.api.BrowserFilterColumn;
 import com.bitwig.extension.controller.api.BrowserItemBank;
@@ -87,6 +88,14 @@ public class BrowserColumnImpl extends AbstractItemImpl implements IBrowserColum
     public String getName ()
     {
         return this.column.name ().get ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void addNameObserver (final IValueObserver<String> observer)
+    {
+        this.column.name ().addValueObserver (observer::update);
     }
 
 

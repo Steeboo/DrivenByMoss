@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.daw.data;
@@ -7,8 +7,9 @@ package de.mossgrabers.framework.daw.data;
 import de.mossgrabers.framework.daw.EmptyBank;
 import de.mossgrabers.framework.daw.ISendBank;
 import de.mossgrabers.framework.daw.ISlotBank;
-import de.mossgrabers.framework.daw.NoteObserver;
 import de.mossgrabers.framework.daw.resource.ChannelType;
+import de.mossgrabers.framework.observer.IValueObserver;
+import de.mossgrabers.framework.observer.NoteObserver;
 
 
 /**
@@ -134,6 +135,14 @@ public class EmptyTrackData implements ITrack
     public String getName (final int limit)
     {
         return "";
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void addNameObserver (final IValueObserver<String> observer)
+    {
+        // Intentionally empty
     }
 
 
@@ -296,7 +305,7 @@ public class EmptyTrackData implements ITrack
 
     /** {@inheritDoc} */
     @Override
-    public void setVolume (final double value)
+    public void setVolume (final int value)
     {
         // Intentionally empty
     }
@@ -336,7 +345,7 @@ public class EmptyTrackData implements ITrack
 
     /** {@inheritDoc} */
     @Override
-    public void setPan (final double value)
+    public void setPan (final int value)
     {
         // Intentionally empty
     }
@@ -480,7 +489,7 @@ public class EmptyTrackData implements ITrack
 
     /** {@inheritDoc} */
     @Override
-    public void setNoteRepeatLength (double length)
+    public void setNoteRepeatLength (final double length)
     {
         // Intentionally empty
     }

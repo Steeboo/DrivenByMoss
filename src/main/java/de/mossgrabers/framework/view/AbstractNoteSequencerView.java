@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.view;
@@ -28,6 +28,7 @@ public abstract class AbstractNoteSequencerView<S extends IControlSurface<C>, C 
     protected int   numDisplayCols;
     protected int   startKey       = 36;
     protected int   loopPadPressed = -1;
+    protected int   offsetY;
 
     private boolean useTrackColor;
 
@@ -127,7 +128,7 @@ public abstract class AbstractNoteSequencerView<S extends IControlSurface<C>, C 
             final int start = this.loopPadPressed < pad ? this.loopPadPressed : pad;
             final int end = (this.loopPadPressed < pad ? pad : this.loopPadPressed) + 1;
             final int lengthOfOnePad = this.getLengthOfOnePage (this.numDisplayCols);
-            final double newStart = start * lengthOfOnePad;
+            final double newStart = (double) start * lengthOfOnePad;
             clip.setLoopStart (newStart);
             clip.setLoopLength ((end - start) * lengthOfOnePad);
             clip.setPlayRange (newStart, (double) end * lengthOfOnePad);
@@ -198,7 +199,9 @@ public abstract class AbstractNoteSequencerView<S extends IControlSurface<C>, C 
                 return hilite ? COLOR_STEP_HILITE_CONTENT : COLOR_CONTENT;
             // Empty
             default:
-                return hilite ? COLOR_STEP_HILITE_NO_CONTENT : this.getColor (note, this.useTrackColor ? track : null);
+                if (hilite)
+                    return COLOR_STEP_HILITE_NO_CONTENT;
+                return this.getColor (note, this.useTrackColor ? track : null);
         }
     }
 
@@ -234,9 +237,6 @@ public abstract class AbstractNoteSequencerView<S extends IControlSurface<C>, C 
     {
         this.offsetY = value;
         this.updateScale ();
-        this.surface.scheduleTask ( () -> {
-            final String text = Scales.getSequencerRangeText (this.keyManager.map (0), this.keyManager.map (this.numSequencerRows - 1));
-            this.surface.getDisplay ().notify (text);
-        }, 10);
+        this.surface.scheduleTask ( () -> this.surface.getDisplay ().notify (Scales.getSequencerRangeText (this.keyManager.map (0), this.keyManager.map (this.numSequencerRows - 1))), 10);
     }
 }

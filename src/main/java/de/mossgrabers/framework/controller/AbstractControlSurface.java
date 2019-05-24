@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller;
@@ -35,6 +35,7 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 {
     protected static final int                          BUTTON_STATE_INTERVAL = 400;
     protected static final int                          NUM_NOTES             = 128;
+    protected static final int                          NUM_BUTTONS           = 256;
 
     protected final IHost                               host;
     protected final C                                   configuration;
@@ -105,8 +106,8 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 
         // Button related
         this.buttons = buttons;
-        this.buttonStates = new ButtonEvent [NUM_NOTES];
-        this.buttonConsumed = new boolean [NUM_NOTES];
+        this.buttonStates = new ButtonEvent [NUM_BUTTONS];
+        this.buttonConsumed = new boolean [NUM_BUTTONS];
         if (this.buttons != null)
         {
             for (final int button: this.buttons)
@@ -118,8 +119,8 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 
         // Optimisation for button LED updates, cache 128 possible note values on
         // all 16 midi channels
-        this.buttonCache = new ArrayList<> (NUM_NOTES);
-        for (int i = 0; i < NUM_NOTES; i++)
+        this.buttonCache = new ArrayList<> (NUM_BUTTONS);
+        for (int i = 0; i < NUM_BUTTONS; i++)
         {
             final int [] channels = new int [16];
             Arrays.fill (channels, -1);
@@ -231,13 +232,7 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     @Override
     public void assignTriggerCommand (final int midiCC, final int midiChannel, final Integer commandID)
     {
-        Map<Integer, Integer> channelMap = this.triggerCommands.get (Integer.valueOf (midiCC));
-        if (channelMap == null)
-        {
-            channelMap = new HashMap<> ();
-            this.triggerCommands.put (Integer.valueOf (midiCC), channelMap);
-        }
-        channelMap.put (Integer.valueOf (midiChannel), commandID);
+        this.triggerCommands.computeIfAbsent (Integer.valueOf (midiCC), k -> new HashMap<> ()).put (Integer.valueOf (midiChannel), commandID);
     }
 
 
@@ -580,6 +575,15 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 
     /** {@inheritDoc} */
     @Override
+    public void clearButtonCache ()
+    {
+        for (int i = 0; i < NUM_BUTTONS; i++)
+            this.buttonCache.get (i)[0] = -1;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
     public boolean isButton (final int cc)
     {
         return this.buttonStates[cc] != null;
@@ -625,6 +629,15 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     public void shutdown ()
     {
         this.flushExecutor.shutdown ();
+
+        for (final int button: this.getButtons ())
+            this.setButton (button, 0);
+
+        if (this.pads != null)
+            this.pads.turnOff ();
+
+        if (this.display != null)
+            this.display.shutdown ();
     }
 
 
@@ -640,23 +653,21 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
         final int code = status & 0xF0;
         final int channel = status & 0xF;
 
-        View view;
         switch (code)
         {
-            // Note on/off
+            // Note off
             case 0x80:
+                this.handleNote (data1, 0);
+                break;
+
+            // Note on
             case 0x90:
-                if (this.isGridNote (data1))
-                    this.handleGridNote (data1, code == 0x80 ? 0 : data2);
-                else
-                    this.handleNoteEvent (data1, code == 0x80 ? 0 : data2);
+                this.handleNote (data1, data2);
                 break;
 
             // Polyphonic Aftertouch
             case 0xA0:
-                view = this.viewManager.getActiveView ();
-                if (view != null)
-                    view.executeAftertouchCommand (data1, data2);
+                this.handlePolyAftertouch (data1, data2);
                 break;
 
             // CC
@@ -666,22 +677,75 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 
             // Channel Aftertouch
             case 0xD0:
-                view = this.viewManager.getActiveView ();
-                if (view != null)
-                    view.executeAftertouchCommand (-1, data1);
+                this.handleChannelAftertouch (data1);
                 break;
 
             // Pitch Bend
             case 0xE0:
-                view = this.viewManager.getActiveView ();
-                if (view != null)
-                    view.executePitchbendCommand (channel, data1, data2);
+                this.handlePitchBend (channel, data1, data2);
                 break;
 
             default:
                 this.host.println ("Unhandled midi status: " + status);
                 break;
         }
+    }
+
+
+    /**
+     * Handle a note event
+     *
+     * @param note The note
+     * @param velocity The velocity
+     */
+    protected void handleNote (final int note, final int velocity)
+    {
+        if (this.isGridNote (note))
+            this.handleGridNote (note, velocity);
+        else
+            this.handleNoteEvent (note, velocity);
+    }
+
+
+    /**
+     * Handle pitch bend.
+     *
+     * @param channel The MIDI channel
+     * @param data1 First data byte
+     * @param data2 Second data byte
+     */
+    protected void handlePitchBend (final int channel, final int data1, final int data2)
+    {
+        final View view = this.viewManager.getActiveView ();
+        if (view != null)
+            view.executePitchbendCommand (channel, data1, data2);
+    }
+
+
+    /**
+     * Handle channel aftertouch.
+     *
+     * @param data1 First data byte
+     */
+    protected void handleChannelAftertouch (final int data1)
+    {
+        final View view = this.viewManager.getActiveView ();
+        if (view != null)
+            view.executeAftertouchCommand (-1, data1);
+    }
+
+
+    /**
+     * Handle poly aftertouch.
+     *
+     * @param data1 First data byte
+     * @param data2 Second data byte
+     */
+    protected void handlePolyAftertouch (final int data1, final int data2)
+    {
+        final View view = this.viewManager.getActiveView ();
+        if (view != null)
+            view.executeAftertouchCommand (data1, data2);
     }
 
 
@@ -919,7 +983,7 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
      *
      * @param buttonID The button CC to check
      */
-    private void checkButtonState (final int buttonID)
+    protected void checkButtonState (final int buttonID)
     {
         if (this.buttonStates[buttonID] != ButtonEvent.DOWN)
             return;

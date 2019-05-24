@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.osc;
@@ -8,6 +8,7 @@ import de.mossgrabers.framework.configuration.AbstractConfiguration;
 import de.mossgrabers.framework.configuration.IEnumSetting;
 import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.IValueChanger;
+import de.mossgrabers.framework.daw.IHost;
 
 
 /**
@@ -18,11 +19,11 @@ import de.mossgrabers.framework.controller.IValueChanger;
 public abstract class AbstractOpenSoundControlConfiguration extends AbstractConfiguration implements IOpenSoundControlConfiguration
 {
     /** ID for logging input commands option. */
-    public static final Integer   LOG_INPUT_COMMANDS        = Integer.valueOf (40);
+    public static final Integer   LOG_INPUT_COMMANDS        = Integer.valueOf (50);
     /** ID for logging output commands option. */
-    public static final Integer   LOG_OUTPUT_COMMANDS       = Integer.valueOf (41);
+    public static final Integer   LOG_OUTPUT_COMMANDS       = Integer.valueOf (51);
     /** ID for filtering heartbeat OSC messages from logging. */
-    public static final Integer   FILTER_HEARTBEAT_COMMANDS = Integer.valueOf (42);
+    public static final Integer   FILTER_HEARTBEAT_COMMANDS = Integer.valueOf (52);
 
     protected static final String DEFAULT_SERVER            = "127.0.0.1";
 
@@ -34,11 +35,12 @@ public abstract class AbstractOpenSoundControlConfiguration extends AbstractConf
     /**
      * Constructor.
      *
+     * @param host The DAW host
      * @param valueChanger The value changer
      */
-    public AbstractOpenSoundControlConfiguration (final IValueChanger valueChanger)
+    public AbstractOpenSoundControlConfiguration (final IHost host, final IValueChanger valueChanger)
     {
-        super (valueChanger);
+        super (host, valueChanger);
     }
 
 

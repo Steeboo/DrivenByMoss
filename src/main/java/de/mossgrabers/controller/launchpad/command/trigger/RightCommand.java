@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.launchpad.command.trigger;
@@ -43,9 +43,9 @@ public class RightCommand extends MetronomeCommand<LaunchpadControlSurface, Laun
         final View view = this.surface.getViewManager ().getActiveView ();
         if (index == 8 || this.surface.isShiftPressed ())
         {
-            if (!tb.canScrollForwards ())
+            if (!tb.canScrollPageForwards ())
                 return;
-            tb.scrollPageForwards ();
+            tb.selectNextPage ();
             final int newSel = index == 8 || sel == null ? 0 : sel.getIndex ();
             this.surface.scheduleTask ( () -> view.selectTrack (newSel), 75);
             return;

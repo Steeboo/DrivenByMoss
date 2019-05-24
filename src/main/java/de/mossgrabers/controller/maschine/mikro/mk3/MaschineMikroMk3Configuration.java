@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.maschine.mikro.mk3;
@@ -8,6 +8,7 @@ import de.mossgrabers.framework.configuration.AbstractConfiguration;
 import de.mossgrabers.framework.configuration.IEnumSetting;
 import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.IValueChanger;
+import de.mossgrabers.framework.daw.IHost;
 
 
 /**
@@ -18,7 +19,7 @@ import de.mossgrabers.framework.controller.IValueChanger;
 public class MaschineMikroMk3Configuration extends AbstractConfiguration
 {
     /** Setting for the ribbon mode. */
-    public static final Integer   RIBBON_MODE               = Integer.valueOf (30);
+    public static final Integer   RIBBON_MODE               = Integer.valueOf (50);
 
     /** Use ribbon for pitch bend down. */
     public static final int       RIBBON_MODE_PITCH_DOWN    = 0;
@@ -54,11 +55,12 @@ public class MaschineMikroMk3Configuration extends AbstractConfiguration
     /**
      * Constructor.
      *
+     * @param host The DAW host
      * @param valueChanger The value changer
      */
-    public MaschineMikroMk3Configuration (final IValueChanger valueChanger)
+    public MaschineMikroMk3Configuration (final IHost host, final IValueChanger valueChanger)
     {
-        super (valueChanger);
+        super (host, valueChanger);
     }
 
 

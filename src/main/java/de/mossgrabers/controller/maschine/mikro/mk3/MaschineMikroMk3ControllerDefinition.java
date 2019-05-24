@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.maschine.mikro.mk3;
@@ -27,7 +27,7 @@ public class MaschineMikroMk3ControllerDefinition extends DefaultControllerDefin
      */
     public MaschineMikroMk3ControllerDefinition ()
     {
-        super ("", "Jürgen Moßgraber", "1.00", EXTENSION_ID, "Maschine Mikro Mk3", "Native Instruments", 1, 1);
+        super (EXTENSION_ID, "Maschine Mikro Mk3", "Native Instruments", 1, 1);
     }
 
 

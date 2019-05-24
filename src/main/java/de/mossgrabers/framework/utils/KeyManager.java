@@ -1,13 +1,13 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.utils;
 
 import de.mossgrabers.framework.controller.grid.PadGrid;
 import de.mossgrabers.framework.daw.IModel;
-import de.mossgrabers.framework.daw.NoteObserver;
 import de.mossgrabers.framework.daw.data.ITrack;
+import de.mossgrabers.framework.observer.NoteObserver;
 import de.mossgrabers.framework.scale.Scales;
 
 import java.util.ArrayList;
@@ -24,6 +24,7 @@ public class KeyManager implements NoteObserver
 {
     private final int []  pressedKeys = new int [128];
     private final IModel  model;
+    private final Scales  scales;
     private final PadGrid padGrid;
     private int []        noteMap     = Scales.getEmptyMatrix ();
 
@@ -37,6 +38,7 @@ public class KeyManager implements NoteObserver
     public KeyManager (final IModel model, final PadGrid padGrid)
     {
         this.model = model;
+        this.scales = this.model.getScales ();
         this.padGrid = padGrid;
         Arrays.fill (this.pressedKeys, 0);
     }
@@ -157,7 +159,7 @@ public class KeyManager implements NoteObserver
      */
     public String getColor (final int pad)
     {
-        return this.model.getScales ().getColor (this.noteMap, pad);
+        return this.scales.getColor (this.noteMap, pad);
     }
 
 

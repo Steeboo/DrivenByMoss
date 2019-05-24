@@ -1,18 +1,18 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.launchpad.command.trigger;
 
 import de.mossgrabers.controller.launchpad.LaunchpadConfiguration;
 import de.mossgrabers.controller.launchpad.controller.LaunchpadControlSurface;
-import de.mossgrabers.controller.launchpad.view.Views;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
-import de.mossgrabers.framework.command.trigger.ViewMultiSelectCommand;
+import de.mossgrabers.framework.command.trigger.view.ViewMultiSelectCommand;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -36,7 +36,7 @@ public class SelectNoteViewCommand extends AbstractTriggerCommand<LaunchpadContr
     {
         super (model, surface);
 
-        if (this.model.getHost ().hasClips ())
+        if (this.model.getHost ().hasDrumDevice ())
         {
             this.playSelect = new ViewMultiSelectCommand<> (model, surface, true, Views.VIEW_PLAY, Views.VIEW_PIANO, Views.VIEW_DRUM, Views.VIEW_DRUM4, Views.VIEW_DRUM8, Views.VIEW_DRUM64);
             this.seqSelect = new ViewMultiSelectCommand<> (model, surface, true, Views.VIEW_SEQUENCER, Views.VIEW_RAINDROPS);

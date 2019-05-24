@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode;
@@ -8,6 +8,7 @@ import de.mossgrabers.controller.push.controller.PushControlSurface;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.graphics.display.DisplayModel;
 import de.mossgrabers.framework.mode.AbstractMode;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.ButtonEvent;
 
 
@@ -26,7 +27,7 @@ public class InfoMode extends BaseMode
      */
     public InfoMode (final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Info", surface, model);
         this.isTemporary = false;
     }
 

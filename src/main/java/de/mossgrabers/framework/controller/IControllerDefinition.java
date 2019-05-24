@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller;
@@ -46,9 +46,10 @@ public interface IControllerDefinition
     /**
      * The version of this controller implementation.
      *
+     * @param pckg The package which contains the controller definition
      * @return The version
      */
-    String getVersion ();
+    String getVersion (Package pckg);
 
 
     /**

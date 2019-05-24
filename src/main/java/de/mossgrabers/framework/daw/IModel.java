@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.daw;
@@ -202,13 +202,32 @@ public interface IModel
 
 
     /**
-     * Creates a new track bank for monitoring scenes.
+     * Creates a new bank for monitoring scenes.
      *
-     * @param numTracks The number of tracks in a bank page
      * @param numScenes The number of scenes in a bank page
-     * @return The track bank
+     * @return The scene bank
      */
-    ITrackBank createSceneViewTrackBank (final int numTracks, final int numScenes);
+    ISceneBank createSceneBank (final int numScenes);
+
+
+    /**
+     * Check if any of the tracks is soloed.
+     *
+     * @return True if there is at least one soloed track
+     */
+    boolean hasSolo ();
+
+
+    /**
+     * Deactivate all solo states of all tracks.
+     */
+    void deactivateSolo ();
+
+
+    /**
+     * Deactivate all mute states of all tracks.
+     */
+    void deactivateMute ();
 
 
     /**

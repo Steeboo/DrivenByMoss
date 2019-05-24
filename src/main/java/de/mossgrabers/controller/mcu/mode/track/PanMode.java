@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mcu.mode.track;
@@ -26,13 +26,13 @@ public class PanMode extends AbstractTrackMode
      */
     public PanMode (final MCUControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Panorama", surface, model);
     }
 
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnob (final int index, final int value)
+    public void onKnobValue (final int index, final int value)
     {
         this.model.getCurrentTrackBank ().getItem (this.surface.getExtenderOffset () + index).changePan (value);
     }
@@ -97,7 +97,10 @@ public class PanMode extends AbstractTrackMode
         for (int i = 0; i < 8; i++)
         {
             final ITrack t = tb.getItem (extenderOffset + i);
-            this.surface.setKnobLED (i, MCUControlSurface.KNOB_LED_MODE_BOOST_CUT, t.doesExist () ? Math.max (t.getPan (), 1) : upperBound / 2, upperBound);
+            if (t.doesExist ())
+                this.surface.setKnobLED (i, MCUControlSurface.KNOB_LED_MODE_BOOST_CUT, Math.max (t.getPan (), 1), upperBound);
+            else
+                this.surface.setKnobLED (i, MCUControlSurface.KNOB_LED_MODE_SINGLE_DOT, 0, upperBound);
         }
     }
 

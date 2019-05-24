@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc.command.trigger;
@@ -13,7 +13,7 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 
 
 /**
- * Command to quantize the currently selected clip.
+ * Command to quantize the currently selected clip. Toggle pinning if shifted.
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
@@ -38,13 +38,12 @@ public class APCQuantizeCommand extends QuantizeCommand<APCControlSurface, APCCo
         if (event != ButtonEvent.DOWN)
             return;
         final ICursorDevice cursorDevice = this.model.getCursorDevice ();
-        if (cursorDevice.doesExist ())
-        {
-            final boolean pinned = cursorDevice.isPinned ();
-            cursorDevice.togglePinned ();
-            final boolean cursorTrackPinned = this.model.isCursorTrackPinned ();
-            if (pinned == cursorTrackPinned)
-                this.model.toggleCursorTrackPinned ();
-        }
+        if (!cursorDevice.doesExist ())
+            return;
+        final boolean pinned = cursorDevice.isPinned ();
+        cursorDevice.togglePinned ();
+        final boolean cursorTrackPinned = this.model.isCursorTrackPinned ();
+        if (pinned == cursorTrackPinned)
+            this.model.toggleCursorTrackPinned ();
     }
 }

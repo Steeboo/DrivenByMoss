@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc.controller;
@@ -246,17 +246,6 @@ public class APCControlSurface extends AbstractControlSurface<APCConfiguration>
     public int getSceneButton (final int index)
     {
         return APC_BUTTON_SCENE_LAUNCH_1 + index;
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void shutdown ()
-    {
-        for (final int button: this.getButtons ())
-            this.setButton (button, 0);
-
-        this.pads.turnOff ();
     }
 
 

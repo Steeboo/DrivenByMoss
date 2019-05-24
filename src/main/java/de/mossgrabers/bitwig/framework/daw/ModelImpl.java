@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
@@ -10,9 +10,10 @@ import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.daw.AbstractModel;
 import de.mossgrabers.framework.daw.IClip;
 import de.mossgrabers.framework.daw.INoteClip;
-import de.mossgrabers.framework.daw.ITrackBank;
+import de.mossgrabers.framework.daw.ISceneBank;
 import de.mossgrabers.framework.daw.ModelSetup;
 import de.mossgrabers.framework.scale.Scales;
+import de.mossgrabers.framework.utils.FrameworkException;
 
 import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Arranger;
@@ -24,6 +25,9 @@ import com.bitwig.extension.controller.api.MasterTrack;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
 import com.bitwig.extension.controller.api.TrackBank;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * The model which contains all data and access to the DAW.
@@ -32,9 +36,13 @@ import com.bitwig.extension.controller.api.TrackBank;
  */
 public class ModelImpl extends AbstractModel
 {
-    private ControllerHost controllerHost;
-    private CursorTrack    cursorTrack;
-    private BooleanValue   masterTrackEqualsValue;
+    private static final int               ALL_TRACKS = 1000;
+
+    private final ControllerHost           controllerHost;
+    private final CursorTrack              cursorTrack;
+    private final BooleanValue             masterTrackEqualsValue;
+    private final Map<Integer, ISceneBank> sceneBanks = new HashMap<> (1);
+    private final TrackBank                muteSoloTrackBank;
 
 
     /**
@@ -78,7 +86,10 @@ public class ModelImpl extends AbstractModel
         final int numScenes = this.modelSetup.getNumScenes ();
         if (this.modelSetup.hasFlatTrackList ())
         {
-            tb = controllerHost.createMainTrackBank (numTracks, numSends, numScenes);
+            if (this.modelSetup.hasFullFlatTrackList ())
+                tb = controllerHost.createTrackBank (numTracks, numSends, numScenes, true);
+            else
+                tb = controllerHost.createMainTrackBank (numTracks, numSends, numScenes);
             tb.followCursorTrack (this.cursorTrack);
         }
         else
@@ -86,7 +97,11 @@ public class ModelImpl extends AbstractModel
 
         this.trackBank = new TrackBankImpl (this.host, valueChanger, tb, this.cursorTrack, numTracks, numScenes, numSends);
         final TrackBank effectTrackBank = controllerHost.createEffectTrackBank (numTracks, numScenes);
-        this.effectTrackBank = new EffectTrackBankImpl (this.host, valueChanger, effectTrackBank, this.cursorTrack, numTracks, numScenes, this.trackBank);
+        this.effectTrackBank = new EffectTrackBankImpl (this.host, valueChanger, this.cursorTrack, effectTrackBank, numTracks, numScenes, this.trackBank);
+
+        this.muteSoloTrackBank = controllerHost.createTrackBank (ALL_TRACKS, 0, 0, true);
+        for (int i = 0; i < ALL_TRACKS; i++)
+            this.muteSoloTrackBank.getItemAt (i).solo ().markInterested ();
 
         final int numParams = this.modelSetup.getNumParams ();
         final int numDeviceLayers = this.modelSetup.getNumDeviceLayers ();
@@ -113,11 +128,44 @@ public class ModelImpl extends AbstractModel
 
     /** {@inheritDoc} */
     @Override
-    public ITrackBank createSceneViewTrackBank (final int numTracks, final int numScenes)
+    public ISceneBank createSceneBank (final int numScenes)
     {
-        final TrackBank tb = this.controllerHost.createMainTrackBank (numTracks, this.modelSetup.getNumSends (), numScenes);
-        tb.followCursorTrack (this.cursorTrack);
-        return new TrackBankImpl (this.host, this.valueChanger, tb, this.cursorTrack, numTracks, numScenes, 0);
+        return this.sceneBanks.computeIfAbsent (Integer.valueOf (numScenes), key -> {
+            final TrackBank tb = this.controllerHost.createMainTrackBank (1, this.modelSetup.getNumSends (), numScenes);
+            tb.followCursorTrack (this.cursorTrack);
+            return new TrackBankImpl (this.host, this.valueChanger, tb, this.cursorTrack, 1, numScenes, 0).getSceneBank ();
+        });
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasSolo ()
+    {
+        for (int i = 0; i < ALL_TRACKS; i++)
+        {
+            if (this.muteSoloTrackBank.getItemAt (i).solo ().get ())
+                return true;
+        }
+        return false;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void deactivateSolo ()
+    {
+        for (int i = 0; i < ALL_TRACKS; i++)
+            this.muteSoloTrackBank.getItemAt (i).solo ().set (false);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void deactivateMute ()
+    {
+        for (int i = 0; i < ALL_TRACKS; i++)
+            this.muteSoloTrackBank.getItemAt (i).mute ().set (false);
     }
 
 
@@ -134,7 +182,7 @@ public class ModelImpl extends AbstractModel
     public IClip getClip ()
     {
         if (this.cursorClips.isEmpty ())
-            throw new RuntimeException ("No cursor clip created!");
+            throw new FrameworkException ("No cursor clip created!");
         return this.cursorClips.values ().iterator ().next ();
     }
 

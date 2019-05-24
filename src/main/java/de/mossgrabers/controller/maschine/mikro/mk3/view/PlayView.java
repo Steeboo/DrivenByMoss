@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.maschine.mikro.mk3.view;
@@ -66,6 +66,9 @@ public class PlayView extends AbstractPlayView<MaschineMikroMk3ControlSurface, M
                 break;
             case 3:
                 this.onOctaveUp (event);
+                break;
+            default:
+                // Not used
                 break;
         }
     }

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode.track;
@@ -8,7 +8,6 @@ import de.mossgrabers.controller.push.controller.PushColors;
 import de.mossgrabers.controller.push.controller.PushControlSurface;
 import de.mossgrabers.controller.push.mode.BaseMode;
 import de.mossgrabers.controller.push.view.ColorView;
-import de.mossgrabers.controller.push.view.Views;
 import de.mossgrabers.framework.controller.display.Display;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.ITrackBank;
@@ -17,6 +16,7 @@ import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.graphics.display.DisplayModel;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -34,7 +34,7 @@ public class TrackDetailsMode extends BaseMode
      */
     public TrackDetailsMode (final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Track details", surface, model);
     }
 
 
@@ -81,6 +81,9 @@ public class TrackDetailsMode extends BaseMode
                 ((ColorView) viewManager.getView (Views.VIEW_COLOR)).setMode (ColorView.SelectMode.MODE_TRACK);
                 viewManager.setActiveView (Views.VIEW_COLOR);
                 break;
+            default:
+                // Not used
+                break;
         }
     }
 
@@ -119,6 +122,9 @@ public class TrackDetailsMode extends BaseMode
                 final ViewManager viewManager = this.surface.getViewManager ();
                 ((ColorView) viewManager.getView (Views.VIEW_COLOR)).setMode (ColorView.SelectMode.MODE_TRACK);
                 viewManager.setActiveView (Views.VIEW_COLOR);
+                break;
+            default:
+                // Not used
                 break;
         }
     }
@@ -205,5 +211,13 @@ public class TrackDetailsMode extends BaseMode
             return t;
         final IMasterTrack master = this.model.getMasterTrack ();
         return master.isSelected () ? master : null;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected ITrackBank getBank ()
+    {
+        return this.model.getCurrentTrackBank ();
     }
 }

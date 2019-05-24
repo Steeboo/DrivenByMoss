@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc;
@@ -33,7 +33,7 @@ public class APCControllerDefinition extends DefaultControllerDefinition
      */
     public APCControllerDefinition (final boolean isMkII)
     {
-        super ("", "Jürgen Moßgraber", "5.13", isMkII ? EXTENSION_ID_MK_II : EXTENSION_ID_MK_I, isMkII ? "APC40 mkII" : "APC40", "Akai", 1, 1);
+        super (isMkII ? EXTENSION_ID_MK_II : EXTENSION_ID_MK_I, isMkII ? "APC40 mkII" : "APC40", "Akai", 1, 1);
         this.isMkII = isMkII;
     }
 

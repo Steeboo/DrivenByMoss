@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.command.trigger;
@@ -7,12 +7,12 @@ package de.mossgrabers.controller.push.command.trigger;
 import de.mossgrabers.controller.push.PushConfiguration;
 import de.mossgrabers.controller.push.PushConfiguration.TrackState;
 import de.mossgrabers.controller.push.controller.PushControlSurface;
-import de.mossgrabers.controller.push.mode.Modes;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
 import de.mossgrabers.framework.daw.ICursorDevice;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.data.IChannel;
 import de.mossgrabers.framework.daw.data.ITrack;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.ButtonEvent;
 
 
@@ -42,6 +42,13 @@ public class SoloCommand extends AbstractTriggerCommand<PushControlSurface, Push
         // Update for key combinations
         this.surface.getViewManager ().getActiveView ().updateNoteMapping ();
 
+        if (this.surface.isSelectPressed ())
+        {
+            if (event == ButtonEvent.UP)
+                this.model.deactivateSolo ();
+            return;
+        }
+
         final PushConfiguration config = this.surface.getConfiguration ();
         if (!config.isPush2 ())
         {
@@ -53,7 +60,15 @@ public class SoloCommand extends AbstractTriggerCommand<PushControlSurface, Push
         if (this.surface.isShiftPressed ())
         {
             if (event == ButtonEvent.UP)
-                config.setMuteSoloLocked (!config.isMuteSoloLocked ());
+            {
+                if (config.isMuteSoloLocked () && config.isSoloState ())
+                    config.setMuteSoloLocked (false);
+                else
+                {
+                    config.setMuteSoloLocked (true);
+                    config.setTrackState (TrackState.SOLO);
+                }
+            }
             return;
         }
 
@@ -84,20 +99,14 @@ public class SoloCommand extends AbstractTriggerCommand<PushControlSurface, Push
         }
 
         final Integer activeModeId = this.surface.getModeManager ().getActiveOrTempModeId ();
-        if (Modes.isTrackMode (activeModeId))
-        {
-            final ITrack selTrack = this.model.getSelectedTrack ();
-            if (selTrack != null)
-                selTrack.toggleSolo ();
-        }
-        else if (Modes.isLayerMode (activeModeId))
+        if (Modes.isLayerMode (activeModeId))
         {
             final ICursorDevice cd = this.model.getCursorDevice ();
             final IChannel layer = cd.getLayerOrDrumPadBank ().getSelectedItem ();
             if (layer != null)
                 layer.toggleSolo ();
         }
-        else if (activeModeId == Modes.MODE_MASTER)
+        else if (Modes.MODE_MASTER.equals (activeModeId))
             this.model.getMasterTrack ().toggleSolo ();
         else
         {

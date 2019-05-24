@@ -1,8 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.daw;
+
+import de.mossgrabers.framework.observer.ItemSelectionObserver;
+import de.mossgrabers.framework.observer.ObserverManagement;
 
 import java.util.List;
 
@@ -69,9 +72,25 @@ public interface IBank<T> extends ObserverManagement
     /**
      * Is there a previous page to select?
      *
-     * @return True if there is a page previous of the current
+     * @return True if there is a previous item of the current
      */
     boolean canScrollBackwards ();
+
+
+    /**
+     * Is there a previous item?
+     *
+     * @return True if there is a next item after the current
+     */
+    boolean canScrollForwards ();
+
+
+    /**
+     * Is there a next item to select?
+     *
+     * @return True if there is a page previous of the current
+     */
+    boolean canScrollPageBackwards ();
 
 
     /**
@@ -79,7 +98,7 @@ public interface IBank<T> extends ObserverManagement
      *
      * @return True if there is a page after the current
      */
-    boolean canScrollForwards ();
+    boolean canScrollPageForwards ();
 
 
     /**
@@ -92,18 +111,6 @@ public interface IBank<T> extends ObserverManagement
      * Scroll items forwards by 1.
      */
     void scrollForwards ();
-
-
-    /**
-     * Scroll items backwards by 1 page.
-     */
-    void scrollPageBackwards ();
-
-
-    /**
-     * Scroll items forwards by 1 page.
-     */
-    void scrollPageForwards ();
 
 
     /**
@@ -147,7 +154,7 @@ public interface IBank<T> extends ObserverManagement
     /**
      * Select the item at the given position. If the position is negative or larger than the bank
      * size nothing happens.
-     * 
+     *
      * @param position The position of the item to select
      */
     void selectItemAtPosition (final int position);

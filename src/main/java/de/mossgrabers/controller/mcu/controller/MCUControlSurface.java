@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mcu.controller;
@@ -355,11 +355,18 @@ public class MCUControlSurface extends AbstractControlSurface<MCUConfiguration>
     @Override
     public void shutdown ()
     {
-        // Turn off all buttons
-        for (final int button: this.getButtons ())
-            this.setButton (button, 0);
+        final IMidiOutput output = this.getOutput ();
+        for (int i = 0; i < 8; i++)
+        {
+            output.sendChannelAftertouch (0x10 * i, 0);
+            output.sendPitchbend (i, 0, 0);
+        }
+        output.sendChannelAftertouch (1, 0, 0);
+        output.sendChannelAftertouch (1, 0x10, 0);
+        output.sendPitchbend (8, 0, 0);
 
-        this.display.shutdown ();
+        super.shutdown ();
+
         this.secondDisplay.shutdown ();
         this.segmentDisplay.shutdown ();
     }
@@ -544,6 +551,9 @@ public class MCUControlSurface extends AbstractControlSurface<MCUConfiguration>
                     out.sendChannelAftertouch (0 + (i << 4), 0);
                     out.sendSysex (SYSEX_HDR + "20 0" + i + " 00 F7");
                 }
+                break;
+            default:
+                // Not used
                 break;
         }
     }

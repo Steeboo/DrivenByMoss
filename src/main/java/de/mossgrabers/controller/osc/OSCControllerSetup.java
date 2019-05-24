@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.osc;
@@ -46,7 +46,7 @@ public class OSCControllerSetup extends AbstractControllerSetup<IControlSurface<
 
         this.colorManager = new ColorManager ();
         this.valueChanger = new DefaultValueChanger (128, 1, 0.5);
-        this.configuration = new OSCConfiguration (this.valueChanger);
+        this.configuration = new OSCConfiguration (host, this.valueChanger);
     }
 
 
@@ -86,6 +86,27 @@ public class OSCControllerSetup extends AbstractControllerSetup<IControlSurface<
         for (int i = 0; i < tb.getPageSize (); i++)
             tb.getItem (i).addNoteObserver (this.keyManager);
         tb.addSelectionObserver ( (final int index, final boolean isSelected) -> this.keyManager.clearPressedKeys ());
+
+        this.configuration.addSettingObserver (OSCConfiguration.VALUE_RESOLUTION, () -> {
+            switch (this.configuration.getValueResolution ())
+            {
+                case LOW:
+                    this.valueChanger.setUpperBound (128);
+                    this.valueChanger.setFractionValue (1);
+                    this.valueChanger.setSlowFractionValue (0.5);
+                    break;
+                case MEDIUM:
+                    this.valueChanger.setUpperBound (1024);
+                    this.valueChanger.setFractionValue (8);
+                    this.valueChanger.setSlowFractionValue (4);
+                    break;
+                case HIGH:
+                    this.valueChanger.setUpperBound (16384);
+                    this.valueChanger.setFractionValue (128);
+                    this.valueChanger.setSlowFractionValue (64);
+                    break;
+            }
+        });
     }
 
 
@@ -96,7 +117,7 @@ public class OSCControllerSetup extends AbstractControllerSetup<IControlSurface<
         final IMidiAccess midiAccess = this.factory.createMidiAccess ();
         final IMidiInput input = midiAccess.createInput ("OSC");
 
-        final OSCControlSurface surface = new OSCControlSurface (this.model.getHost (), this.configuration, this.colorManager, input);
+        final OSCControlSurface surface = new OSCControlSurface (this.host, this.configuration, this.colorManager, input);
         this.surfaces.add (surface);
         this.keyManager = new KeyManager (this.model, surface.getPadGrid ());
 

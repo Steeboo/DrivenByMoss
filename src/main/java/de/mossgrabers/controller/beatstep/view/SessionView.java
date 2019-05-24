@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.beatstep.view;
@@ -42,10 +42,7 @@ public class SessionView extends AbstractView<BeatstepControlSurface, BeatstepCo
     {
         // Knob 12-15 are currently not used
         if (index < 12)
-        {
             this.extensions.onTrackKnob (index, value);
-            return;
-        }
     }
 
 
@@ -71,11 +68,11 @@ public class SessionView extends AbstractView<BeatstepControlSurface, BeatstepCo
                 break;
 
             case 6:
-                sceneBank.scrollPageBackwards ();
+                sceneBank.selectPreviousPage ();
                 break;
 
             case 7:
-                sceneBank.scrollPageForwards ();
+                sceneBank.selectNextPage ();
                 break;
 
             case 8:
@@ -87,6 +84,10 @@ public class SessionView extends AbstractView<BeatstepControlSurface, BeatstepCo
             case 14:
             case 15:
                 sceneBank.getItem (index - 8).launch ();
+                break;
+
+            default:
+                // Not used
                 break;
         }
     }

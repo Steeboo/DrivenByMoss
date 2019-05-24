@@ -1,11 +1,12 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc.mode;
 
 import de.mossgrabers.controller.apc.controller.APCControlSurface;
 import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.data.ITrack;
 
 
@@ -24,7 +25,7 @@ public class PanMode extends BaseMode
      */
     public PanMode (final APCControlSurface surface, final IModel model)
     {
-        super (surface, model, 3, 64);
+        super ("Panorama", surface, model, 3, 64);
     }
 
 
@@ -42,5 +43,13 @@ public class PanMode extends BaseMode
     {
         final ITrack track = this.model.getCurrentTrackBank ().getItem (index);
         return track.doesExist () ? Integer.valueOf (track.getPan ()) : null;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected ITrackBank getBank ()
+    {
+        return this.model.getCurrentTrackBank ();
     }
 }

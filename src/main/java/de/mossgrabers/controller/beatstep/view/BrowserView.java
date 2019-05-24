@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.beatstep.view;
@@ -12,6 +12,7 @@ import de.mossgrabers.framework.daw.IBrowser;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.view.AbstractView;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -80,6 +81,10 @@ public class BrowserView extends AbstractView<BeatstepControlSurface, BeatstepCo
                     for (int i = 0; i < 64 - value; i++)
                         browser.selectPreviousResult ();
                 }
+                break;
+
+            default:
+                // Not used
                 break;
         }
     }

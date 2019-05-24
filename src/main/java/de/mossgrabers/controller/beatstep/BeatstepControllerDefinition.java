@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.beatstep;
@@ -32,7 +32,7 @@ public class BeatstepControllerDefinition extends DefaultControllerDefinition
      */
     public BeatstepControllerDefinition (final boolean isPro)
     {
-        super ("", "Jürgen Moßgraber", "4.02", isPro ? EXTENSION_ID_PRO : EXTENSION_ID, isPro ? "Beatstep Pro" : "Beatstep", "Arturia", 1, 1);
+        super (isPro ? EXTENSION_ID_PRO : EXTENSION_ID, isPro ? "Beatstep Pro" : "Beatstep", "Arturia", 1, 1);
         this.isPro = isPro;
     }
 

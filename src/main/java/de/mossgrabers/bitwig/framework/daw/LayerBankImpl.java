@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
@@ -128,7 +128,7 @@ public class LayerBankImpl extends AbstractBankImpl<DeviceLayerBank, ILayer> imp
 
     /** {@inheritDoc} */
     @Override
-    public boolean canScrollBackwards ()
+    public boolean canScrollPageBackwards ()
     {
         return this.cursorDeviceLayer.hasPrevious ().get ();
     }
@@ -136,7 +136,7 @@ public class LayerBankImpl extends AbstractBankImpl<DeviceLayerBank, ILayer> imp
 
     /** {@inheritDoc} */
     @Override
-    public boolean canScrollForwards ()
+    public boolean canScrollPageForwards ()
     {
         return this.cursorDeviceLayer.hasNext ().get ();
     }

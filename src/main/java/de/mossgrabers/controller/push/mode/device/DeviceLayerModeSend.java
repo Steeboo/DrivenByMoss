@@ -1,22 +1,22 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode.device;
 
 import de.mossgrabers.controller.push.PushConfiguration;
 import de.mossgrabers.controller.push.controller.PushControlSurface;
-import de.mossgrabers.controller.push.mode.Modes;
 import de.mossgrabers.framework.controller.display.Display;
 import de.mossgrabers.framework.controller.display.Format;
 import de.mossgrabers.framework.daw.IChannelBank;
 import de.mossgrabers.framework.daw.ICursorDevice;
 import de.mossgrabers.framework.daw.IModel;
-import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.data.IChannel;
 import de.mossgrabers.framework.daw.data.ISend;
 import de.mossgrabers.framework.daw.resource.ChannelType;
 import de.mossgrabers.framework.graphics.display.DisplayModel;
+import de.mossgrabers.framework.graphics.grid.SendData;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.Pair;
 
 
@@ -35,13 +35,13 @@ public class DeviceLayerModeSend extends DeviceLayerMode
      */
     public DeviceLayerModeSend (final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Layer Send", surface, model);
     }
 
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnob (final int index, final int value)
+    public void onKnobValue (final int index, final int value)
     {
         final ICursorDevice cd = this.model.getCursorDevice ();
 
@@ -55,7 +55,7 @@ public class DeviceLayerModeSend extends DeviceLayerMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnobTouch (final int index, final boolean isTouched)
+    public void onKnobTouch (final int index, final boolean isTouched)
     {
         this.isKnobTouched[index] = isTouched;
 
@@ -69,14 +69,10 @@ public class DeviceLayerModeSend extends DeviceLayerMode
 
         final int sendIndex = this.getCurrentSendIndex ();
 
-        if (isTouched)
+        if (isTouched && this.surface.isDeletePressed ())
         {
-            if (this.surface.isDeletePressed ())
-            {
-                this.surface.setButtonConsumed (this.surface.getDeleteButtonId ());
-                layer.getSendBank ().getItem (sendIndex).resetValue ();
-                return;
-            }
+            this.surface.setButtonConsumed (this.surface.getDeleteButtonId ());
+            layer.getSendBank ().getItem (sendIndex).resetValue ();
         }
 
         layer.getSendBank ().getItem (sendIndex).touchValue (isTouched);
@@ -117,7 +113,6 @@ public class DeviceLayerModeSend extends DeviceLayerMode
     public void updateDisplayElements (final DisplayModel message, final ICursorDevice cd, final IChannel l)
     {
         final int sendIndex = this.getCurrentSendIndex ();
-        final ITrackBank fxTrackBank = this.model.getEffectTrackBank ();
 
         this.updateMenuItems (5 + sendIndex % 4);
 
@@ -136,23 +131,16 @@ public class DeviceLayerModeSend extends DeviceLayerMode
             final boolean isTopMenuOn = pair.getValue ().booleanValue ();
 
             // Channel info
-            final String [] sendName = new String [4];
-            final String [] valueStr = new String [4];
-            final int [] value = new int [4];
-            final int [] modulatedValue = new int [4];
-            final boolean [] selected = new boolean [4];
+            final SendData [] sendData = new SendData [4];
             for (int j = 0; j < 4; j++)
             {
                 final int sendPos = sendOffset + j;
                 final ISend send = layer.getSendBank ().getItem (sendPos);
-                sendName[j] = fxTrackBank == null ? send.getName () : fxTrackBank.getItem (sendPos).getName ();
-                valueStr[j] = send.doesExist () && sendIndex == sendPos && this.isKnobTouched[i] ? send.getDisplayedValue () : "";
-                value[j] = send.doesExist () ? send.getValue () : 0;
-                modulatedValue[j] = send.doesExist () ? send.getModulatedValue () : 0;
-                selected[j] = sendIndex == sendPos;
+                final boolean exists = send.doesExist ();
+                sendData[j] = new SendData (send.getName (), exists && sendIndex == sendPos && this.isKnobTouched[i] ? send.getDisplayedValue () : "", exists ? send.getValue () : 0, exists ? send.getModulatedValue () : 0, sendIndex == sendPos);
             }
 
-            message.addSendsElement (topMenu, isTopMenuOn, layer.doesExist () ? layer.getName () : "", ChannelType.LAYER, bank.getItem (offset + i).getColor (), layer.isSelected (), sendName, valueStr, value, modulatedValue, selected, false);
+            message.addSendsElement (topMenu, isTopMenuOn, layer.doesExist () ? layer.getName () : "", ChannelType.LAYER, bank.getItem (offset + i).getColor (), layer.isSelected (), sendData, false);
         }
     }
 

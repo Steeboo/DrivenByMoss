@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mcu;
@@ -26,10 +26,10 @@ public class MCUControllerDefinition extends DefaultControllerDefinition
 
     private static final String [] HARDWARE_MODEL =
     {
-        "Control Universal",
-        "Control Universal + 1 Extender",
-        "Control Universal + 2 Extenders",
-        "Control Universal + 3 Extenders"
+        "MCU - Control Universal",
+        "MCU - Control Universal + 1 Extender",
+        "MCU - Control Universal + 2 Extenders",
+        "MCU - Control Universal + 3 Extenders"
     };
 
 
@@ -40,6 +40,6 @@ public class MCUControllerDefinition extends DefaultControllerDefinition
      */
     public MCUControllerDefinition (final int numMCUExtenders)
     {
-        super ("", "Jürgen Moßgraber", "2.62", EXTENSION_ID[numMCUExtenders], HARDWARE_MODEL[numMCUExtenders], "Mackie", numMCUExtenders + 1, numMCUExtenders + 1);
+        super (EXTENSION_ID[numMCUExtenders], HARDWARE_MODEL[numMCUExtenders], "Mackie", numMCUExtenders + 1, numMCUExtenders + 1);
     }
 }

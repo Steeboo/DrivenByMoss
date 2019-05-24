@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode;
@@ -106,7 +106,7 @@ public class FrameMode extends BaseMode
      */
     public FrameMode (final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Frame", surface, model);
     }
 
 
@@ -159,6 +159,9 @@ public class FrameMode extends BaseMode
             case 7:
                 app.toggleInspector ();
                 break;
+            default:
+                // Not used
+                break;
         }
     }
 
@@ -199,6 +202,9 @@ public class FrameMode extends BaseMode
                 case 7:
                     app.toggleFullScreen ();
                     break;
+                default:
+                    // Not used
+                    break;
             }
         }
         else if (app.isMixerLayout ())
@@ -226,6 +232,9 @@ public class FrameMode extends BaseMode
                     break;
                 case 7:
                     app.toggleFullScreen ();
+                    break;
+                default:
+                    // Not used
                     break;
             }
         }

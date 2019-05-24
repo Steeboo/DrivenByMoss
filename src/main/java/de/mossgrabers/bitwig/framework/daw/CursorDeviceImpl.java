@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
@@ -20,6 +20,9 @@ import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 import com.bitwig.extension.controller.api.DeviceBank;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * Proxy to the Bitwig Cursor device.
@@ -30,6 +33,9 @@ public class CursorDeviceImpl extends DeviceImpl implements ICursorDevice
 {
     private final PinnableCursorDevice cursorDevice;
     private final CursorDeviceLayer    cursorDeviceLayer;
+
+    private String []                  directParameterIds;
+    private Map<String, String>        directParameterNames = new HashMap<> ();
 
     private final IDeviceBank          deviceBank;
     private final IParameterPageBank   parameterPageBank;
@@ -74,6 +80,9 @@ public class CursorDeviceImpl extends DeviceImpl implements ICursorDevice
         this.cursorDevice.hasSlots ().markInterested ();
         this.cursorDevice.isPinned ().markInterested ();
 
+        this.cursorDevice.addDirectParameterIdObserver (value -> this.directParameterIds = value);
+        this.cursorDevice.addDirectParameterNameObserver (1024, (String id, String name) -> this.directParameterNames.put (id, name));
+
         this.cursorDeviceLayer = this.cursorDevice.createCursorLayer ();
         this.cursorDeviceLayer.hasPrevious ().markInterested ();
         this.cursorDeviceLayer.hasNext ().markInterested ();
@@ -84,7 +93,7 @@ public class CursorDeviceImpl extends DeviceImpl implements ICursorDevice
             // We use the same number of page entries (numParams) for the page bank, add a specific
             // parameter if there is one controller who wants that differently
             this.parameterPageBank = new ParameterPageBankImpl (remoteControlsPage, numParams);
-            this.parameterBank = new ParameterBankImpl (valueChanger, this.parameterPageBank, remoteControlsPage, numParams);
+            this.parameterBank = new ParameterBankImpl (host, valueChanger, this.parameterPageBank, remoteControlsPage, numParams);
         }
         else
         {
@@ -94,7 +103,7 @@ public class CursorDeviceImpl extends DeviceImpl implements ICursorDevice
 
         // Monitor the sibling devices of the cursor device
         final DeviceBank siblings = checkedNumDevices > 0 ? this.cursorDevice.createSiblingsDeviceBank (checkedNumDevices) : null;
-        this.deviceBank = new DeviceBankImpl (host, valueChanger, siblings, checkedNumDevices);
+        this.deviceBank = new DeviceBankImpl (host, valueChanger, this, siblings, checkedNumDevices);
 
         // Monitor the layers of a container device (if any)
         this.layerBank = new LayerBankImpl (host, valueChanger, checkedNumDeviceLayers > 0 ? this.cursorDevice.createLayerBank (checkedNumDeviceLayers) : null, this.cursorDeviceLayer, numDeviceLayers, numSends, checkedNumDevices);
@@ -136,6 +145,18 @@ public class CursorDeviceImpl extends DeviceImpl implements ICursorDevice
 
         this.layerBank.enableObservers (enable);
         this.drumPadBank.enableObservers (enable);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public String getID ()
+    {
+        if (this.directParameterIds.length == 0)
+            return "";
+        // Get the name of the first parameter. Currently, only works for Komplete Kontrol plugin
+        final String id = this.directParameterNames.get (this.directParameterIds[0]);
+        return id == null ? "" : id;
     }
 
 
@@ -250,7 +271,7 @@ public class CursorDeviceImpl extends DeviceImpl implements ICursorDevice
         final boolean moveBank = this.getIndex () == 0;
         this.cursorDevice.selectPrevious ();
         if (moveBank)
-            this.deviceBank.scrollPageBackwards ();
+            this.deviceBank.selectPreviousPage ();
     }
 
 
@@ -261,7 +282,7 @@ public class CursorDeviceImpl extends DeviceImpl implements ICursorDevice
         final boolean moveBank = this.getIndex () == this.getDeviceBank ().getPageSize () - 1;
         this.cursorDevice.selectNext ();
         if (moveBank)
-            this.deviceBank.scrollPageForwards ();
+            this.deviceBank.selectNextPage ();
     }
 
 

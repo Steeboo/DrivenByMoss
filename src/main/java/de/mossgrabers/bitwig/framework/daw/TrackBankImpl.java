@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
@@ -18,9 +18,6 @@ import com.bitwig.extension.controller.api.TrackBank;
  */
 public class TrackBankImpl extends AbstractTrackBankImpl
 {
-    private CursorTrack cursorTrack;
-
-
     /**
      * Constructor.
      *
@@ -34,17 +31,7 @@ public class TrackBankImpl extends AbstractTrackBankImpl
      */
     public TrackBankImpl (final IHost host, final IValueChanger valueChanger, final TrackBank bank, final CursorTrack cursorTrack, final int numTracks, final int numScenes, final int numSends)
     {
-        super (host, valueChanger, bank, numTracks, numScenes, numSends);
-
-        this.cursorTrack = cursorTrack;
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void selectChildren ()
-    {
-        this.cursorTrack.selectFirstChild ();
+        super (host, valueChanger, cursorTrack, bank, numTracks, numScenes, numSends);
     }
 
 

@@ -1,17 +1,17 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mcu.command.pitchbend;
 
 import de.mossgrabers.controller.mcu.MCUConfiguration;
 import de.mossgrabers.controller.mcu.controller.MCUControlSurface;
-import de.mossgrabers.controller.mcu.mode.Modes;
 import de.mossgrabers.framework.command.core.AbstractPitchbendCommand;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
 
 
 /**
@@ -37,7 +37,7 @@ public class PitchbendVolumeCommand extends AbstractPitchbendCommand<MCUControlS
     @Override
     public void onPitchbend (final int channel, final int data1, final int data2)
     {
-        final double value = Math.min (data2 * 127 + (double) data1, this.model.getValueChanger ().getUpperBound () - 1);
+        final int value = Math.min (data2 * 127 + data1, this.model.getValueChanger ().getUpperBound () - 1);
         if (channel == 8)
         {
             if (this.surface.isShiftPressed ())
@@ -76,7 +76,7 @@ public class PitchbendVolumeCommand extends AbstractPitchbendCommand<MCUControlS
             else if (modeManager.isActiveOrTempMode (Modes.MODE_SEND8))
                 track.getSendBank ().getItem (7).setValue (value);
             else if (modeManager.isActiveOrTempMode (Modes.MODE_DEVICE_PARAMS))
-                this.model.getCursorDevice ().getParameterBank ().getItem (extenderOffset + channel).setValue ((int) value);
+                this.model.getCursorDevice ().getParameterBank ().getItem (extenderOffset + channel).setValue (value);
             return;
         }
 
@@ -84,7 +84,7 @@ public class PitchbendVolumeCommand extends AbstractPitchbendCommand<MCUControlS
     }
 
 
-    private void handleTrack (final int index, final double value)
+    private void handleTrack (final int index, final int value)
     {
         final ITrack selectedTrack = this.model.getSelectedTrack ();
         switch (index)

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.daw;
@@ -21,7 +21,7 @@ public class EmptyBank<T extends IItem> extends AbstractBank<T>
      */
     public EmptyBank ()
     {
-        super (0);
+        super (null, 0);
     }
 
 
@@ -43,7 +43,7 @@ public class EmptyBank<T extends IItem> extends AbstractBank<T>
 
     /** {@inheritDoc} */
     @Override
-    public boolean canScrollBackwards ()
+    public boolean canScrollPageBackwards ()
     {
         return false;
     }
@@ -51,7 +51,7 @@ public class EmptyBank<T extends IItem> extends AbstractBank<T>
 
     /** {@inheritDoc} */
     @Override
-    public boolean canScrollForwards ()
+    public boolean canScrollPageForwards ()
     {
         return false;
     }
@@ -75,22 +75,6 @@ public class EmptyBank<T extends IItem> extends AbstractBank<T>
 
     /** {@inheritDoc} */
     @Override
-    public void scrollPageBackwards ()
-    {
-        // Intentionally empty
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void scrollPageForwards ()
-    {
-        // Intentionally empty
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
     public void scrollTo (final int position)
     {
         // Intentionally empty
@@ -99,7 +83,7 @@ public class EmptyBank<T extends IItem> extends AbstractBank<T>
 
     /** {@inheritDoc} */
     @Override
-    public void scrollTo (int position, boolean adjustPage)
+    public void scrollTo (final int position, final boolean adjustPage)
     {
         // Intentionally empty
     }

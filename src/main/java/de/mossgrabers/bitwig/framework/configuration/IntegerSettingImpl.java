@@ -1,11 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.configuration;
 
 import de.mossgrabers.framework.configuration.IIntegerSetting;
-import de.mossgrabers.framework.configuration.IValueObserver;
+import de.mossgrabers.framework.observer.IValueObserver;
 
 import com.bitwig.extension.controller.api.SettableRangedValue;
 import com.bitwig.extension.controller.api.Setting;

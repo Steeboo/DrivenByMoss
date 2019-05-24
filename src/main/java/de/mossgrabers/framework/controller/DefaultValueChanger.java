@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller;
@@ -11,10 +11,10 @@ package de.mossgrabers.framework.controller;
  */
 public class DefaultValueChanger implements IValueChanger
 {
-    private final int    upperBound;
-    private final int    fractionValue;
-    private final double slowFractionValue;
-    private boolean      isSlow;
+    private int     upperBound;
+    private double  fractionValue;
+    private double  slowFractionValue;
+    private boolean isSlow;
 
 
     /**
@@ -24,7 +24,7 @@ public class DefaultValueChanger implements IValueChanger
      * @param fractionValue Amount by which values are incremented / decremented
      * @param slowFractionValue Amount by which values are slowly incremented / decremented
      */
-    public DefaultValueChanger (final int upperBound, final int fractionValue, final double slowFractionValue)
+    public DefaultValueChanger (final int upperBound, final double fractionValue, final double slowFractionValue)
     {
         this.upperBound = upperBound;
         this.fractionValue = fractionValue;
@@ -42,9 +42,25 @@ public class DefaultValueChanger implements IValueChanger
 
     /** {@inheritDoc} */
     @Override
-    public int getFractionValue ()
+    public void setUpperBound (final int upperBound)
+    {
+        this.upperBound = upperBound;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public double getFractionValue ()
     {
         return this.fractionValue;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void setFractionValue (final double fractionValue)
+    {
+        this.fractionValue = fractionValue;
     }
 
 
@@ -53,6 +69,14 @@ public class DefaultValueChanger implements IValueChanger
     public double getSlowFractionValue ()
     {
         return this.slowFractionValue;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void setSlowFractionValue (final double slowFractionValue)
+    {
+        this.slowFractionValue = slowFractionValue;
     }
 
 

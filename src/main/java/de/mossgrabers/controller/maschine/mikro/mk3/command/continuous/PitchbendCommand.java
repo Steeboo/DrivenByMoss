@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.maschine.mikro.mk3.command.continuous;
@@ -59,6 +59,10 @@ public class PitchbendCommand extends AbstractContinuousCommand<MaschineMikroMk3
             case MaschineMikroMk3Configuration.RIBBON_MODE_MASTER_VOLUME:
                 this.model.getMasterTrack ().setVolume (this.model.getValueChanger ().toDAWValue (value));
                 return;
+
+            default:
+                // Not used
+                break;
         }
     }
 }

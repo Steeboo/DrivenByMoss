@@ -1,16 +1,16 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.beatstep.controller;
 
 import de.mossgrabers.controller.beatstep.BeatstepConfiguration;
-import de.mossgrabers.controller.beatstep.view.Views;
 import de.mossgrabers.framework.controller.AbstractControlSurface;
 import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.daw.IHost;
 import de.mossgrabers.framework.daw.midi.IMidiInput;
 import de.mossgrabers.framework.daw.midi.IMidiOutput;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -115,16 +115,6 @@ public class BeatstepControlSurface extends AbstractControlSurface<BeatstepConfi
         super (host, configuration, colorManager, output, input, new BeatstepPadGrid (colorManager, output), BEATSTEP_BUTTONS_ALL);
 
         this.isPro = isPro;
-
-        this.output.sendIdentityRequest ();
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void shutdown ()
-    {
-        this.pads.turnOff ();
     }
 
 

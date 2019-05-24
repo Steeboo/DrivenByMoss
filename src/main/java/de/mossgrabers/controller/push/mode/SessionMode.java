@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode;
@@ -8,7 +8,6 @@ import de.mossgrabers.controller.push.controller.PushColors;
 import de.mossgrabers.controller.push.controller.PushControlSurface;
 import de.mossgrabers.controller.push.controller.PushDisplay;
 import de.mossgrabers.controller.push.mode.track.AbstractTrackMode;
-import de.mossgrabers.controller.push.view.Views;
 import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.controller.display.Display;
 import de.mossgrabers.framework.daw.IModel;
@@ -22,19 +21,20 @@ import de.mossgrabers.framework.mode.AbstractMode;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.Pair;
 import de.mossgrabers.framework.utils.StringUtils;
+import de.mossgrabers.framework.view.Views;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 /**
- * Mode for editing the parameters of a clip.
+ * Mode for displaying clips or scenes.
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
 public class SessionMode extends AbstractTrackMode
 {
-    private static enum RowDisplayMode
+    private enum RowDisplayMode
     {
         ALL,
         UPPER,
@@ -42,7 +42,7 @@ public class SessionMode extends AbstractTrackMode
     }
 
     private RowDisplayMode rowDisplayMode;
-    private ITrackBank     trackBank;
+    private ISceneBank     sceneBank;
 
 
     /**
@@ -53,16 +53,16 @@ public class SessionMode extends AbstractTrackMode
      */
     public SessionMode (final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Session", surface, model);
         this.isTemporary = false;
         this.rowDisplayMode = this.isPush2 ? RowDisplayMode.ALL : RowDisplayMode.UPPER;
-        this.trackBank = model.createSceneViewTrackBank (8, 64);
+        this.sceneBank = model.createSceneBank (64);
     }
 
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnobTouch (final int index, final boolean isTouched)
+    public void onKnobTouch (final int index, final boolean isTouched)
     {
         this.isKnobTouched[index] = isTouched;
     }
@@ -70,7 +70,7 @@ public class SessionMode extends AbstractTrackMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnob (final int index, final int value)
+    public void onKnobValue (final int index, final int value)
     {
         // Intentionally empty
     }
@@ -151,8 +151,6 @@ public class SessionMode extends AbstractTrackMode
 
     private void updateDisplay1Scenes ()
     {
-        final ISceneBank sceneBank = this.trackBank.getSceneBank ();
-
         final int maxCols = 8;
         final int maxRows = this.rowDisplayMode == RowDisplayMode.ALL ? 8 : 4;
 
@@ -165,7 +163,7 @@ public class SessionMode extends AbstractTrackMode
                 if (this.rowDisplayMode == RowDisplayMode.LOWER)
                     sceneIndex += 32;
 
-                final IScene scene = sceneBank.getItem (sceneIndex);
+                final IScene scene = this.sceneBank.getItem (sceneIndex);
                 if (!scene.doesExist ())
                     continue;
                 final boolean isSel = scene.isSelected ();
@@ -252,8 +250,6 @@ public class SessionMode extends AbstractTrackMode
 
     private void updateDisplay2Scenes ()
     {
-        final ISceneBank sceneBank = this.trackBank.getSceneBank ();
-
         final int maxCols = 8;
         final int maxRows = this.rowDisplayMode == RowDisplayMode.ALL ? 8 : 4;
 
@@ -266,7 +262,7 @@ public class SessionMode extends AbstractTrackMode
                 int sceneIndex = (maxRows - 1 - row) * 8 + col;
                 if (this.rowDisplayMode == RowDisplayMode.LOWER)
                     sceneIndex += 32;
-                scenes.add (sceneBank.getItem (sceneIndex));
+                scenes.add (this.sceneBank.getItem (sceneIndex));
             }
             message.addSceneListElement (scenes);
         }

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.sl.mode;
@@ -7,12 +7,12 @@ package de.mossgrabers.controller.sl.mode;
 import de.mossgrabers.controller.sl.SLConfiguration;
 import de.mossgrabers.controller.sl.controller.SLControlSurface;
 import de.mossgrabers.controller.sl.controller.SLDisplay;
-import de.mossgrabers.controller.sl.view.Views;
 import de.mossgrabers.framework.controller.display.Display;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.mode.AbstractMode;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -30,7 +30,7 @@ public class ViewSelectMode extends AbstractMode<SLControlSurface, SLConfigurati
      */
     public ViewSelectMode (final SLControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("View select", surface, model);
     }
 
 
@@ -53,7 +53,7 @@ public class ViewSelectMode extends AbstractMode<SLControlSurface, SLConfigurati
 
     /** {@inheritDoc} */
     @Override
-    public void onRowButton (final int row, final int index, final ButtonEvent event)
+    public void onButton (final int row, final int index, final ButtonEvent event)
     {
         // Intentionally empty
     }

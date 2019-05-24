@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.continuous;
@@ -36,6 +36,6 @@ public class PlayPositionCommand<S extends IControlSurface<C>, C extends Configu
     @Override
     public void execute (final int value)
     {
-        this.model.getTransport ().changePosition (value <= 61);
+        this.model.getTransport ().changePosition (this.model.getValueChanger ().calcKnobSpeed (value) > 0);
     }
 }

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
@@ -87,6 +87,22 @@ public class ApplicationImpl implements IApplication
     public String getPanelLayout ()
     {
         return this.application.panelLayout ().get ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void previousPanelLayout ()
+    {
+        this.application.previousPanelLayout ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void nextPanelLayout ()
+    {
+        this.application.nextPanelLayout ();
     }
 
 

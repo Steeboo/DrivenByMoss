@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode.device;
@@ -41,7 +41,7 @@ public class DeviceBrowserMode extends BaseMode
      */
     public DeviceBrowserMode (final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Browser", surface, model);
 
         this.isTemporary = false;
 
@@ -81,7 +81,7 @@ public class DeviceBrowserMode extends BaseMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnob (final int index, final int value)
+    public void onKnobValue (final int index, final int value)
     {
         if (!this.isKnobTouched[index])
             return;
@@ -93,7 +93,7 @@ public class DeviceBrowserMode extends BaseMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnobTouch (final int index, final boolean isTouched)
+    public void onKnobTouch (final int index, final boolean isTouched)
     {
         // Make sure that only 1 knob gets changed in browse mode to prevent weird behaviour
         for (int i = 0; i < this.isKnobTouched.length; i++)
@@ -230,6 +230,10 @@ public class DeviceBrowserMode extends BaseMode
                     d.setBlock (i % 4, i / 4, text);
                 }
                 break;
+
+            default:
+                // Not used
+                break;
         }
         d.allDone ();
     }
@@ -285,7 +289,7 @@ public class DeviceBrowserMode extends BaseMode
                     {
                         final int pos = i * 6 + item;
                         items[item] = pos < results.length ? results[pos].getName (16) : "";
-                        selected[item] = pos < results.length ? results[pos].isSelected () : false;
+                        selected[item] = pos < results.length && results[pos].isSelected ();
                     }
                     message.addListElement (items, selected);
                 }
@@ -308,6 +312,10 @@ public class DeviceBrowserMode extends BaseMode
                     }
                     message.addListElement (items, selected);
                 }
+                break;
+
+            default:
+                // Not used
                 break;
         }
 
@@ -341,6 +349,56 @@ public class DeviceBrowserMode extends BaseMode
     }
 
 
+    /** {@inheritDoc} */
+    @Override
+    public void selectPreviousItem ()
+    {
+        this.resetFilterColumn ();
+        this.model.getBrowser ().previousContentType ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void selectNextItem ()
+    {
+        this.resetFilterColumn ();
+        this.model.getBrowser ().nextContentType ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasPreviousItem ()
+    {
+        return this.model.getBrowser ().hasPreviousContentType ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasNextItem ()
+    {
+        return this.model.getBrowser ().hasNextContentType ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasPreviousItemPage ()
+    {
+        return this.hasPreviousItem ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasNextItemPage ()
+    {
+        return this.hasNextItem ();
+    }
+
+
     private IBrowserColumn getFilterColumn (final int index)
     {
         final IBrowser browser = this.model.getBrowser ();
@@ -370,7 +428,7 @@ public class DeviceBrowserMode extends BaseMode
                 this.filterColumn = fc.getIndex ();
                 for (int i = 0; i < count; i++)
                     browser.selectNextFilterItem (this.filterColumn);
-                // TODO Bugfix required - getSelectedFilterItemIndex gets -1
+                // TODO Bugfix required: getSelectedFilterItemIndex gets -1
                 // https://github.com/teotigraphix/Framework4Bitwig/issues/220
                 this.model.getHost ().scheduleTask ( () -> {
                     if (browser.getSelectedFilterItemIndex (this.filterColumn) == -1)
@@ -399,7 +457,7 @@ public class DeviceBrowserMode extends BaseMode
                     this.filterColumn = fc.getIndex ();
                     for (int j = 0; j < count; j++)
                         browser.selectPreviousFilterItem (this.filterColumn);
-                    // TODO Bugfix required - getSelectedFilterItemIndex gets -1
+                    // TODO Bugfix required: getSelectedFilterItemIndex gets -1
                     // https://github.com/teotigraphix/Framework4Bitwig/issues/220
                     this.model.getHost ().scheduleTask ( () -> {
                         if (browser.getSelectedFilterItemIndex (this.filterColumn) == -1)

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mcu.command.continuous;
@@ -34,7 +34,7 @@ public class PlayPositionTempoCommand extends PlayPositionCommand<MCUControlSurf
     public void execute (final int value)
     {
         if (this.surface.isPressed (MCUControlSurface.MCU_OPTION))
-            this.model.getTransport ().changeTempo (value <= 61);
+            this.model.getTransport ().changeTempo (this.model.getValueChanger ().calcKnobSpeed (value) > 0);
         else
             super.execute (value);
     }

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc.controller;
@@ -159,6 +159,7 @@ public class APCColors
 
         if (isMkII)
         {
+            colorManager.registerColor (DAWColors.DAW_COLOR_GRAY_HALF, APC_MKII_COLOR_GREY_MD);
             colorManager.registerColor (DAWColors.DAW_COLOR_DARK_GRAY, APC_MKII_COLOR_GREY_LO);
             colorManager.registerColor (DAWColors.DAW_COLOR_GRAY, APC_MKII_COLOR_GREY_MD);
             colorManager.registerColor (DAWColors.DAW_COLOR_LIGHT_GRAY, APC_MKII_COLOR_GREY_LO);

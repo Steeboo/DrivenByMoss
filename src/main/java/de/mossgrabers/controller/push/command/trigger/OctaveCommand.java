@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.command.trigger;
@@ -42,7 +42,7 @@ public class OctaveCommand extends AbstractTriggerCommand<PushControlSurface, Pu
     public void execute (final ButtonEvent event)
     {
         final View activeView = this.surface.getViewManager ().getActiveView ();
-        if (activeView == null || !(activeView instanceof TransposeView))
+        if (!(activeView instanceof TransposeView))
             return;
 
         if (this.isUp)

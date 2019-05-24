@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.launchpad.command.trigger;
@@ -40,7 +40,7 @@ public class LPSceneCommand extends SceneCommand<LaunchpadControlSurface, Launch
         {
             final int index = 7 - this.scene;
             this.surface.getConfiguration ().setNewClipLength (index);
-            this.surface.getDisplay ().notify (AbstractConfiguration.NEW_CLIP_LENGTH_VALUES[index]);
+            this.surface.getDisplay ().notify (AbstractConfiguration.getNewClipLengthValue (index));
             return;
         }
 

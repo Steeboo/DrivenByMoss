@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.maschine.mikro.mk3.view;
@@ -81,6 +81,9 @@ public class ClipView extends BaseView
                 break;
             case 3:
                 slotBank.selectNextPage ();
+                break;
+            default:
+                // Not used
                 break;
         }
     }

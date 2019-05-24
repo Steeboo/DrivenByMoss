@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.maschine.mikro.mk3.command.trigger;
@@ -25,7 +25,7 @@ public class GridButtonCommand extends AbstractTriggerCommand<MaschineMikroMk3Co
 
     /**
      * Constructor.
-     * 
+     *
      * @param index The index of the button
      * @param model The model
      * @param surface The surface
@@ -42,7 +42,7 @@ public class GridButtonCommand extends AbstractTriggerCommand<MaschineMikroMk3Co
     public void execute (final ButtonEvent event)
     {
         final View activeView = this.surface.getViewManager ().getActiveView ();
-        if (activeView != null && activeView instanceof PadButtons)
+        if (activeView instanceof PadButtons)
             ((PadButtons) activeView).onButton (this.index, event);
     }
 }

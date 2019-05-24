@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.mossgrabers</groupId>
 	<artifactId>DrivenByMoss</artifactId>
 	<packaging>jar</packaging>
 	<name>DrivenByMoss</name>
-	<version>LOCAL-24</version>
+	<version>6.4</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,13 +18,11 @@
 			<name>Bitwig Maven Repository</name>
 			<url>https://maven.bitwig.com</url>
 		</repository>
-
 		<repository>
 			<id>MavenCentral</id>
 			<name>Maven Central Repository</name>
 			<url>https://mvnrepository.com</url>
 		</repository>
-
 		<repository>
 			<id>maven-local-repository</id>
 			<url>file:///${project.basedir}/maven-local-repository</url>
@@ -38,17 +35,25 @@
 			<artifactId>extension-api</artifactId>
 			<version>7</version>
 		</dependency>
-
 		<dependency>
 			<groupId>net.java.dev.jna</groupId>
 			<artifactId>jna</artifactId>
-			<version>5.1.0</version>
+			<version>5.3.0</version>
 		</dependency>
-
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna-platform</artifactId>
+			<version>5.3.0</version>
+		</dependency>
 		<dependency>
 			<groupId>purejavahidapi</groupId>
 			<artifactId>purejavahidapi</artifactId>
 			<version>0.0.13</version>
+		</dependency>
+		<dependency>
+			<artifactId>nativefilechooser</artifactId>
+			<groupId>de.mossgrabers</groupId>
+			<version>1.0</version>
 		</dependency>
 	</dependencies>
 
@@ -89,6 +94,19 @@
 					<target>1.8</target>
 					<encoding>UTF-8</encoding>
 					<maxmem>1024m</maxmem>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+					</archive>
 				</configuration>
 			</plugin>
 

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apcmini.controller;
@@ -101,17 +101,6 @@ public class APCminiControlSurface extends AbstractControlSurface<APCminiConfigu
 
         for (int i = 0; i < 64; i++)
             this.gridNotes[i] = i;
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void shutdown ()
-    {
-        for (final int button: this.getButtons ())
-            this.setButton (button, 0);
-
-        this.pads.turnOff ();
     }
 
 

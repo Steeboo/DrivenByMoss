@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc.view;
@@ -80,5 +80,14 @@ public class SessionView extends AbstractSessionView<APCControlSurface, APCConfi
         this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_3, green);
         this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_4, green);
         this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_5, green);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void drawGrid ()
+    {
+        // No birds eye view, since Shift is used for view changes...
+        this.drawSessionGrid ();
     }
 }

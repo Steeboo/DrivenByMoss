@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.launchpad.command.trigger;
@@ -42,14 +42,8 @@ public class LeftCommand extends MetronomeCommand<LaunchpadControlSurface, Launc
         final int index = sel == null ? 0 : sel.getIndex () - 1;
         final View view = this.surface.getViewManager ().getActiveView ();
         if (index == -1 || this.surface.isShiftPressed ())
-        {
-            if (!tb.canScrollBackwards ())
-                return;
-            tb.scrollPageBackwards ();
-            final int newSel = index == -1 || sel == null ? 7 : sel.getIndex ();
-            this.surface.scheduleTask ( () -> view.selectTrack (newSel), 75);
-            return;
-        }
-        view.selectTrack (index);
+            tb.selectPreviousPage ();
+        else
+            view.selectTrack (index);
     }
 }

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
@@ -22,7 +22,6 @@ import com.bitwig.extension.controller.api.Bank;
  */
 public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> extends AbstractBank<T>
 {
-    protected final IHost         host;
     protected final IValueChanger valueChanger;
     protected final B             bank;
 
@@ -37,14 +36,23 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
      */
     public AbstractBankImpl (final IHost host, final IValueChanger valueChanger, final B bank, final int pageSize)
     {
-        super (pageSize);
+        super (host, pageSize);
 
-        this.host = host;
         this.valueChanger = valueChanger;
         this.bank = bank;
 
         if (this.bank == null)
             return;
+
+        this.bank.cursorIndex ().addValueObserver (index -> {
+            // Note: Currently only works for track banks
+            for (int i = 0; i < this.getPageSize (); i++)
+            {
+                final boolean isSelected = index == i;
+                if (this.items.get (i).isSelected () != isSelected)
+                    this.handleBankSelection (i, isSelected);
+            }
+        });
 
         this.bank.scrollPosition ().markInterested ();
         this.bank.canScrollBackwards ().markInterested ();
@@ -102,17 +110,19 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
     }
 
 
-    /** {@inheritDoc} */
-    @Override
-    public void scrollPageBackwards ()
+    /**
+     * Scroll items backwards by 1 page.
+     */
+    protected void scrollPageBackwards ()
     {
         this.bank.scrollPageBackwards ();
     }
 
 
-    /** {@inheritDoc} */
-    @Override
-    public void scrollPageForwards ()
+    /**
+     * Scroll items forwards by 1 page.
+     */
+    protected void scrollPageForwards ()
     {
         this.bank.scrollPageForwards ();
     }
@@ -120,7 +130,7 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
 
     /** {@inheritDoc} */
     @Override
-    public boolean canScrollBackwards ()
+    public boolean canScrollPageBackwards ()
     {
         return this.bank.canScrollBackwards ().get ();
     }
@@ -128,7 +138,7 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
 
     /** {@inheritDoc} */
     @Override
-    public boolean canScrollForwards ()
+    public boolean canScrollPageForwards ()
     {
         return this.bank.canScrollForwards ().get ();
     }
@@ -146,12 +156,8 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
     @Override
     public void scrollTo (final int position, final boolean adjustPage)
     {
-        if (position < 0 || position >= this.getItemCount ())
-            return;
-        final int pageSize = this.getPageSize ();
-        final int pos = adjustPage ? position / pageSize * pageSize : position;
-        this.bank.scrollIntoView (position);
-        this.bank.scrollPosition ().set (pos);
+        if (position >= 0 && position < this.getItemCount ())
+            this.bank.scrollPosition ().set (position);
     }
 
 
@@ -185,7 +191,7 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
     @Override
     public void selectPreviousPage ()
     {
-        if (!this.canScrollBackwards ())
+        if (!this.canScrollPageBackwards ())
             return;
         this.scrollPageBackwards ();
         this.host.scheduleTask ( () -> this.getItem (this.pageSize - 1).select (), 75);
@@ -196,9 +202,22 @@ public abstract class AbstractBankImpl<B extends Bank<?>, T extends IItem> exten
     @Override
     public void selectNextPage ()
     {
-        if (!this.canScrollForwards ())
+        if (!this.canScrollPageForwards ())
             return;
         this.scrollPageForwards ();
         this.host.scheduleTask ( () -> this.getItem (0).select (), 75);
+    }
+
+
+    /**
+     * Handles track changes. Notifies all track change observers.
+     *
+     * @param index The index of the newly de-/selected track
+     * @param isSelected True if selected
+     */
+    private void handleBankSelection (final int index, final boolean isSelected)
+    {
+        this.getItem (index).setSelected (isSelected);
+        this.notifySelectionObservers (index, isSelected);
     }
 }

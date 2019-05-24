@@ -1,16 +1,17 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.view;
 
 import de.mossgrabers.controller.push.controller.PushControlSurface;
-import de.mossgrabers.controller.push.mode.Modes;
 import de.mossgrabers.framework.daw.ICursorDevice;
 import de.mossgrabers.framework.daw.IDrumPadBank;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.data.IDrumPad;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -97,7 +98,7 @@ public class DrumView extends DrumViewBase
             // If the instrument of the pad was selected for editing, try to select it again
             if (isNested)
             {
-                IDrumPad selectedItem = cdDrumPadBank.getItem (playedPad % pageSize);
+                final IDrumPad selectedItem = cdDrumPadBank.getItem (playedPad % pageSize);
                 if (selectedItem != null)
                     selectedItem.enter ();
             }

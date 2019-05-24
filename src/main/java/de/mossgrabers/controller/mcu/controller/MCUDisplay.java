@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mcu.controller;
@@ -134,17 +134,18 @@ public class MCUDisplay extends AbstractDisplay
     public void writeLine (final int row, final String text)
     {
         final LatestTaskExecutor executor = this.executors[row + (this.isFirst ? 0 : 2)];
-        if (!executor.isShutdown ())
-            executor.execute ( () -> {
-                try
-                {
-                    this.sendDisplayLine (row, text);
-                }
-                catch (final RuntimeException ex)
-                {
-                    this.host.error ("Could not send line to MCU display.", ex);
-                }
-            });
+        if (executor.isShutdown ())
+            return;
+        executor.execute ( () -> {
+            try
+            {
+                this.sendDisplayLine (row, text);
+            }
+            catch (final RuntimeException ex)
+            {
+                this.host.error ("Could not send line to MCU display.", ex);
+            }
+        });
     }
 
 

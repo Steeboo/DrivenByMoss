@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode.track;
@@ -8,7 +8,6 @@ import de.mossgrabers.controller.push.controller.PushColors;
 import de.mossgrabers.controller.push.controller.PushControlSurface;
 import de.mossgrabers.controller.push.view.ColorView;
 import de.mossgrabers.controller.push.view.ColorView.SelectMode;
-import de.mossgrabers.controller.push.view.Views;
 import de.mossgrabers.framework.controller.display.Display;
 import de.mossgrabers.framework.daw.IClip;
 import de.mossgrabers.framework.daw.IModel;
@@ -21,6 +20,7 @@ import de.mossgrabers.framework.utils.StringUtils;
 import de.mossgrabers.framework.view.AbstractSequencerView;
 import de.mossgrabers.framework.view.View;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -41,13 +41,13 @@ public class ClipMode extends AbstractTrackMode
      */
     public ClipMode (final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Clip", surface, model);
     }
 
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnobTouch (final int index, final boolean isTouched)
+    public void onKnobTouch (final int index, final boolean isTouched)
     {
         this.isKnobTouched[index] = isTouched;
 
@@ -61,7 +61,7 @@ public class ClipMode extends AbstractTrackMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnob (final int index, final int value)
+    public void onKnobValue (final int index, final int value)
     {
         if (!this.increaseKnobMovement ())
             return;
@@ -169,16 +169,11 @@ public class ClipMode extends AbstractTrackMode
             return;
         }
 
-        switch (index)
+        if (index == 7)
         {
-            case 7:
-                final ViewManager viewManager = this.surface.getViewManager ();
-                ((ColorView) viewManager.getView (Views.VIEW_COLOR)).setMode (SelectMode.MODE_CLIP);
-                viewManager.setActiveView (Views.VIEW_COLOR);
-                break;
-            default:
-                // not used
-                break;
+            final ViewManager viewManager = this.surface.getViewManager ();
+            ((ColorView) viewManager.getView (Views.VIEW_COLOR)).setMode (SelectMode.MODE_CLIP);
+            viewManager.setActiveView (Views.VIEW_COLOR);
         }
     }
 

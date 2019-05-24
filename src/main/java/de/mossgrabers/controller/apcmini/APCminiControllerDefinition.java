@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apcmini;
@@ -27,7 +27,7 @@ public class APCminiControllerDefinition extends DefaultControllerDefinition
      */
     public APCminiControllerDefinition ()
     {
-        super ("", "Jürgen Moßgraber", "5.02", EXTENSION_ID, "APCmini", "Akai", 1, 1);
+        super (EXTENSION_ID, "APCmini", "Akai", 1, 1);
     }
 
 

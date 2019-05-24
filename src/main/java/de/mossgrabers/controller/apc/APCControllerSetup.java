@@ -1,32 +1,19 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc;
 
-import de.mossgrabers.controller.apc.command.continuous.DeviceKnobRowCommand;
 import de.mossgrabers.controller.apc.command.trigger.APCBrowserCommand;
-import de.mossgrabers.controller.apc.command.trigger.APCCursorCommand;
 import de.mossgrabers.controller.apc.command.trigger.APCQuantizeCommand;
 import de.mossgrabers.controller.apc.command.trigger.APCRecordCommand;
-import de.mossgrabers.controller.apc.command.trigger.BankLeftCommand;
-import de.mossgrabers.controller.apc.command.trigger.BankRightCommand;
-import de.mossgrabers.controller.apc.command.trigger.DeviceLeftCommand;
-import de.mossgrabers.controller.apc.command.trigger.DeviceRightCommand;
-import de.mossgrabers.controller.apc.command.trigger.MasterCommand;
-import de.mossgrabers.controller.apc.command.trigger.NudgeCommand;
-import de.mossgrabers.controller.apc.command.trigger.PanelLayoutCommand;
-import de.mossgrabers.controller.apc.command.trigger.RecArmCommand;
-import de.mossgrabers.controller.apc.command.trigger.SelectCommand;
-import de.mossgrabers.controller.apc.command.trigger.SendCommand;
+import de.mossgrabers.controller.apc.command.trigger.SelectTrackSendOrClipLengthCommand;
+import de.mossgrabers.controller.apc.command.trigger.SendModeCommand;
 import de.mossgrabers.controller.apc.command.trigger.SessionRecordCommand;
-import de.mossgrabers.controller.apc.command.trigger.ShiftCommand;
-import de.mossgrabers.controller.apc.command.trigger.StopAllClipsCommand;
-import de.mossgrabers.controller.apc.command.trigger.StopClipCommand;
+import de.mossgrabers.controller.apc.command.trigger.StopAllClipsOrBrowseCommand;
 import de.mossgrabers.controller.apc.controller.APCColors;
 import de.mossgrabers.controller.apc.controller.APCControlSurface;
 import de.mossgrabers.controller.apc.mode.BrowserMode;
-import de.mossgrabers.controller.apc.mode.Modes;
 import de.mossgrabers.controller.apc.mode.PanMode;
 import de.mossgrabers.controller.apc.mode.SendMode;
 import de.mossgrabers.controller.apc.view.DrumView;
@@ -35,7 +22,6 @@ import de.mossgrabers.controller.apc.view.RaindropsView;
 import de.mossgrabers.controller.apc.view.SequencerView;
 import de.mossgrabers.controller.apc.view.SessionView;
 import de.mossgrabers.controller.apc.view.ShiftView;
-import de.mossgrabers.controller.apc.view.Views;
 import de.mossgrabers.framework.command.Commands;
 import de.mossgrabers.framework.command.SceneCommand;
 import de.mossgrabers.framework.command.continuous.CrossfaderCommand;
@@ -44,19 +30,32 @@ import de.mossgrabers.framework.command.continuous.KnobRowModeCommand;
 import de.mossgrabers.framework.command.continuous.MasterFaderAbsoluteCommand;
 import de.mossgrabers.framework.command.continuous.PlayPositionCommand;
 import de.mossgrabers.framework.command.continuous.TempoCommand;
-import de.mossgrabers.framework.command.trigger.CursorCommand.Direction;
-import de.mossgrabers.framework.command.trigger.ModeSelectCommand;
 import de.mossgrabers.framework.command.trigger.application.PaneCommand;
 import de.mossgrabers.framework.command.trigger.application.PaneCommand.Panels;
+import de.mossgrabers.framework.command.trigger.application.PanelLayoutCommand;
+import de.mossgrabers.framework.command.trigger.application.RedoCommand;
+import de.mossgrabers.framework.command.trigger.application.UndoCommand;
 import de.mossgrabers.framework.command.trigger.clip.NewCommand;
+import de.mossgrabers.framework.command.trigger.clip.StopClipCommand;
+import de.mossgrabers.framework.command.trigger.device.DeviceLayerLeftCommand;
+import de.mossgrabers.framework.command.trigger.device.DeviceLayerRightCommand;
 import de.mossgrabers.framework.command.trigger.device.DeviceOnOffCommand;
+import de.mossgrabers.framework.command.trigger.device.DeviceParamsKnobRowCommand;
+import de.mossgrabers.framework.command.trigger.device.SelectNextDeviceOrParamPageCommand;
+import de.mossgrabers.framework.command.trigger.device.SelectPreviousDeviceOrParamPageCommand;
+import de.mossgrabers.framework.command.trigger.mode.CursorCommand;
+import de.mossgrabers.framework.command.trigger.mode.ModeCursorCommand.Direction;
+import de.mossgrabers.framework.command.trigger.mode.ModeSelectCommand;
 import de.mossgrabers.framework.command.trigger.track.CrossfadeModeCommand;
+import de.mossgrabers.framework.command.trigger.track.MasterCommand;
 import de.mossgrabers.framework.command.trigger.track.MuteCommand;
+import de.mossgrabers.framework.command.trigger.track.RecArmCommand;
 import de.mossgrabers.framework.command.trigger.track.SoloCommand;
 import de.mossgrabers.framework.command.trigger.transport.MetronomeCommand;
 import de.mossgrabers.framework.command.trigger.transport.PlayCommand;
 import de.mossgrabers.framework.command.trigger.transport.StopCommand;
 import de.mossgrabers.framework.command.trigger.transport.TapTempoCommand;
+import de.mossgrabers.framework.command.trigger.view.ToggleShiftViewCommand;
 import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.AbstractControllerSetup;
 import de.mossgrabers.framework.controller.DefaultValueChanger;
@@ -75,10 +74,12 @@ import de.mossgrabers.framework.daw.midi.IMidiAccess;
 import de.mossgrabers.framework.daw.midi.IMidiInput;
 import de.mossgrabers.framework.daw.midi.IMidiOutput;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.view.SceneView;
 import de.mossgrabers.framework.view.View;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -120,7 +121,7 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
         this.colorManager = new ColorManager ();
         APCColors.addColors (this.colorManager, isMkII);
         this.valueChanger = new DefaultValueChanger (128, 1, 0.5);
-        this.configuration = new APCConfiguration (this.valueChanger);
+        this.configuration = new APCConfiguration (host, this.valueChanger);
     }
 
 
@@ -138,6 +139,7 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
     protected void createScales ()
     {
         this.scales = new Scales (this.valueChanger, 36, 76, 8, 5);
+        this.scales.setDrumDefaultOffset (12);
     }
 
 
@@ -147,10 +149,11 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
     {
         final ModelSetup ms = new ModelSetup ();
         ms.setNumScenes (5);
+        ms.setNumDrumPadLayers (12);
         this.model = this.factory.createModel (this.colorManager, this.valueChanger, this.scales, ms);
         final ITrackBank trackBank = this.model.getTrackBank ();
         trackBank.setIndication (true);
-        trackBank.addSelectionObserver (this::handleTrackChange);
+        trackBank.addSelectionObserver ( (index, isSelected) -> this.handleTrackChange (isSelected));
     }
 
 
@@ -162,7 +165,7 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
         final IMidiOutput output = midiAccess.createOutput ();
         final IMidiInput input = midiAccess.createInput (this.isMkII ? "Akai APC40 mkII" : "Akai APC40",
                 "B040??" /* Sustainpedal */);
-        final APCControlSurface surface = new APCControlSurface (this.model.getHost (), this.colorManager, this.configuration, output, input, this.isMkII);
+        final APCControlSurface surface = new APCControlSurface (this.host, this.colorManager, this.configuration, output, input, this.isMkII);
         this.surfaces.add (surface);
         surface.setDisplay (new DummyDisplay (this.host));
         for (int i = 0; i < 8; i++)
@@ -215,16 +218,16 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
     {
         final APCControlSurface surface = this.getSurface ();
         final ViewManager viewManager = surface.getViewManager ();
-        this.addTriggerCommand (Commands.COMMAND_SHIFT, APCControlSurface.APC_BUTTON_SHIFT, new ShiftCommand (this.model, surface));
+        this.addTriggerCommand (Commands.COMMAND_SHIFT, APCControlSurface.APC_BUTTON_SHIFT, new ToggleShiftViewCommand<> (this.model, surface));
         this.addTriggerCommand (Commands.COMMAND_PLAY, APCControlSurface.APC_BUTTON_PLAY, new PlayCommand<> (this.model, surface));
         this.addTriggerCommand (Commands.COMMAND_RECORD, APCControlSurface.APC_BUTTON_RECORD, new APCRecordCommand (this.model, surface));
         this.addTriggerCommand (Commands.COMMAND_TAP_TEMPO, APCControlSurface.APC_BUTTON_TAP_TEMPO, new TapTempoCommand<> (this.model, surface));
         this.addTriggerCommand (Commands.COMMAND_QUANTIZE, APCControlSurface.APC_BUTTON_REC_QUANT, new APCQuantizeCommand (this.model, surface));
         this.addTriggerCommand (Commands.COMMAND_PAN_SEND, APCControlSurface.APC_BUTTON_PAN, new ModeSelectCommand<> (Modes.MODE_PAN, this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_MASTERTRACK, APCControlSurface.APC_BUTTON_MASTER, new MasterCommand (this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_STOP_ALL_CLIPS, APCControlSurface.APC_BUTTON_STOP_ALL_CLIPS, new StopAllClipsCommand<> (this.model, surface));
-        this.addTriggerCommand (Integer.valueOf (COMMAND_SEND), APCControlSurface.APC_BUTTON_SEND_A, new SendCommand (0, this.model, surface));
-        this.addTriggerCommand (Integer.valueOf (COMMAND_SEND + 1), APCControlSurface.APC_BUTTON_SEND_B, new SendCommand (1, this.model, surface));
+        this.addTriggerCommand (Commands.COMMAND_MASTERTRACK, APCControlSurface.APC_BUTTON_MASTER, new MasterCommand<> (this.model, surface));
+        this.addTriggerCommand (Commands.COMMAND_STOP_ALL_CLIPS, APCControlSurface.APC_BUTTON_STOP_ALL_CLIPS, new StopAllClipsOrBrowseCommand<> (this.model, surface));
+        this.addTriggerCommand (Integer.valueOf (COMMAND_SEND), APCControlSurface.APC_BUTTON_SEND_A, new SendModeCommand (0, this.model, surface));
+        this.addTriggerCommand (Integer.valueOf (COMMAND_SEND + 1), APCControlSurface.APC_BUTTON_SEND_B, new SendModeCommand (1, this.model, surface));
 
         for (int i = 0; i < 8; i++)
         {
@@ -235,10 +238,10 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
             final Integer crossfadeCommand = Integer.valueOf (COMMAND_CROSSFADER + i);
             final Integer stopClipCommand = Integer.valueOf (COMMAND_STOP_CLIP + i);
 
-            viewManager.registerTriggerCommand (selectCommand, new SelectCommand (i, this.model, surface));
+            viewManager.registerTriggerCommand (selectCommand, new SelectTrackSendOrClipLengthCommand (i, this.model, surface));
             viewManager.registerTriggerCommand (soloCommand, new SoloCommand<> (i, this.model, surface));
             viewManager.registerTriggerCommand (muteCommand, new MuteCommand<> (i, this.model, surface));
-            viewManager.registerTriggerCommand (recArmCommand, new RecArmCommand (i, this.model, surface));
+            viewManager.registerTriggerCommand (recArmCommand, new RecArmCommand<> (i, this.model, surface));
             viewManager.registerTriggerCommand (crossfadeCommand, new CrossfadeModeCommand<> (i, this.model, surface));
             viewManager.registerTriggerCommand (stopClipCommand, new StopClipCommand<> (i, this.model, surface));
             surface.assignTriggerCommand (APCControlSurface.APC_BUTTON_TRACK_SELECTION, i, selectCommand);
@@ -249,13 +252,13 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
             surface.assignTriggerCommand (APCControlSurface.APC_BUTTON_CLIP_STOP, i, stopClipCommand);
         }
 
-        viewManager.registerTriggerCommand (COMMAND_DEVICE_LEFT, new DeviceLeftCommand (this.model, surface));
-        viewManager.registerTriggerCommand (COMMAND_DEVICE_RIGHT, new DeviceRightCommand (this.model, surface));
+        viewManager.registerTriggerCommand (COMMAND_DEVICE_LEFT, new DeviceLayerLeftCommand<> (this.model, surface));
+        viewManager.registerTriggerCommand (COMMAND_DEVICE_RIGHT, new DeviceLayerRightCommand<> (this.model, surface));
         viewManager.registerTriggerCommand (Commands.COMMAND_CLIP, new SessionRecordCommand (this.model, surface));
         viewManager.registerTriggerCommand (Commands.COMMAND_METRONOME, new MetronomeCommand<> (this.model, surface));
-        viewManager.registerTriggerCommand (Commands.COMMAND_NUDGE_MINUS, new NudgeCommand (true, this.model, surface));
-        viewManager.registerTriggerCommand (Commands.COMMAND_NUDGE_PLUS, new NudgeCommand (false, this.model, surface));
-        viewManager.registerTriggerCommand (Commands.COMMAND_LAYOUT, new PanelLayoutCommand (this.model, surface));
+        viewManager.registerTriggerCommand (Commands.COMMAND_NUDGE_MINUS, new RedoCommand<> (this.model, surface));
+        viewManager.registerTriggerCommand (Commands.COMMAND_NUDGE_PLUS, new UndoCommand<> (this.model, surface));
+        viewManager.registerTriggerCommand (Commands.COMMAND_LAYOUT, new PanelLayoutCommand<> (this.model, surface));
         viewManager.registerTriggerCommand (Commands.COMMAND_DEVICE_ON_OFF, new DeviceOnOffCommand<> (this.model, surface));
         viewManager.registerTriggerCommand (COMMAND_TOGGLE_DEVICES, new PaneCommand<> (Panels.DEVICE, this.model, surface));
         if (this.isMkII)
@@ -283,17 +286,17 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
             surface.assignTriggerCommand (APCControlSurface.APC_BUTTON_CLIP_TRACK, COMMAND_TOGGLE_DEVICES);
 
             this.addTriggerCommand (Commands.COMMAND_STOP, APCControlSurface.APC_BUTTON_STOP, new StopCommand<> (this.model, surface));
-            this.addTriggerCommand (Integer.valueOf (COMMAND_SEND + 2), APCControlSurface.APC_BUTTON_SEND_C, new SendCommand (2, this.model, surface));
+            this.addTriggerCommand (Integer.valueOf (COMMAND_SEND + 2), APCControlSurface.APC_BUTTON_SEND_C, new SendModeCommand (2, this.model, surface));
             this.addTriggerCommand (Commands.COMMAND_NEW, APCControlSurface.APC_FOOTSWITCH_2, new NewCommand<> (this.model, surface));
         }
 
         this.addTriggerCommand (Commands.COMMAND_BROWSE, APCControlSurface.APC_BUTTON_BANK, new APCBrowserCommand (this.model, surface));
-        this.addTriggerCommand (COMMAND_BANK_LEFT, APCControlSurface.APC_BUTTON_DEVICE_LEFT, new BankLeftCommand (this.model, surface));
-        this.addTriggerCommand (COMMAND_BANK_RIGHT, APCControlSurface.APC_BUTTON_DEVICE_RIGHT, new BankRightCommand (this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_ARROW_DOWN, surface.getDownButtonId (), new APCCursorCommand (Direction.DOWN, this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_ARROW_UP, surface.getUpButtonId (), new APCCursorCommand (Direction.UP, this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_ARROW_LEFT, surface.getLeftButtonId (), new APCCursorCommand (Direction.LEFT, this.model, surface));
-        this.addTriggerCommand (Commands.COMMAND_ARROW_RIGHT, surface.getRightButtonId (), new APCCursorCommand (Direction.RIGHT, this.model, surface));
+        this.addTriggerCommand (COMMAND_BANK_LEFT, APCControlSurface.APC_BUTTON_DEVICE_LEFT, new SelectPreviousDeviceOrParamPageCommand<> (this.model, surface));
+        this.addTriggerCommand (COMMAND_BANK_RIGHT, APCControlSurface.APC_BUTTON_DEVICE_RIGHT, new SelectNextDeviceOrParamPageCommand<> (this.model, surface));
+        this.addTriggerCommand (Commands.COMMAND_ARROW_DOWN, surface.getDownButtonId (), new CursorCommand<> (Direction.DOWN, this.model, surface));
+        this.addTriggerCommand (Commands.COMMAND_ARROW_UP, surface.getUpButtonId (), new CursorCommand<> (Direction.UP, this.model, surface));
+        this.addTriggerCommand (Commands.COMMAND_ARROW_LEFT, surface.getLeftButtonId (), new CursorCommand<> (Direction.LEFT, this.model, surface));
+        this.addTriggerCommand (Commands.COMMAND_ARROW_RIGHT, surface.getRightButtonId (), new CursorCommand<> (Direction.RIGHT, this.model, surface));
         this.addTriggerCommand (Commands.COMMAND_SCENE1, APCControlSurface.APC_BUTTON_SCENE_LAUNCH_1, new SceneCommand<> (7, this.model, surface));
         this.addTriggerCommand (Commands.COMMAND_SCENE2, APCControlSurface.APC_BUTTON_SCENE_LAUNCH_2, new SceneCommand<> (6, this.model, surface));
         this.addTriggerCommand (Commands.COMMAND_SCENE3, APCControlSurface.APC_BUTTON_SCENE_LAUNCH_3, new SceneCommand<> (5, this.model, surface));
@@ -324,7 +327,7 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
             surface.assignContinuousCommand (APCControlSurface.APC_KNOB_TRACK_KNOB_1 + i, knobCommand);
 
             final Integer deviceKnobCommand = Integer.valueOf (Commands.CONT_COMMAND_DEVICE_KNOB1.intValue () + i);
-            viewManager.registerContinuousCommand (deviceKnobCommand, new DeviceKnobRowCommand (i, this.model, surface));
+            viewManager.registerContinuousCommand (deviceKnobCommand, new DeviceParamsKnobRowCommand<> (i, this.model, surface));
             surface.assignContinuousCommand (APCControlSurface.APC_KNOB_DEVICE_KNOB_1 + i, deviceKnobCommand);
         }
 
@@ -350,7 +353,7 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
         final View activeView = viewManager.getActiveView ();
         if (activeView != null)
         {
-            ((APCCursorCommand) activeView.getTriggerCommand (Commands.COMMAND_ARROW_DOWN)).updateArrows ();
+            ((CursorCommand<?, ?>) activeView.getTriggerCommand (Commands.COMMAND_ARROW_DOWN)).updateArrows ();
             ((SceneView) activeView).updateSceneButtons ();
         }
 
@@ -370,26 +373,28 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
         for (int i = 0; i < 8; i++)
         {
             final ITrack track = tb.getItem (i);
+            final boolean trackExists = track.doesExist ();
+
             boolean isOn;
             if (isShift)
                 isOn = i == clipLength;
             else
                 isOn = isSendA ? modeManager.isActiveOrTempMode (Integer.valueOf (Modes.MODE_SEND1.intValue () + i)) : i == selIndex;
             surface.updateButtonEx (APCControlSurface.APC_BUTTON_TRACK_SELECTION, i, isOn ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
-            surface.updateButtonEx (APCControlSurface.APC_BUTTON_SOLO, i, track.doesExist () && (isShift ? track.isAutoMonitor () : track.isSolo ()) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
-            surface.updateButtonEx (APCControlSurface.APC_BUTTON_ACTIVATOR, i, track.doesExist () && (isShift ? track.isMonitor () : !track.isMute ()) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButtonEx (APCControlSurface.APC_BUTTON_SOLO, i, trackExists && getSoloButtonState (isShift, track) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButtonEx (APCControlSurface.APC_BUTTON_ACTIVATOR, i, trackExists && getMuteButtonState (isShift, track) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
 
             if (this.isMkII)
             {
-                surface.updateButtonEx (APCControlSurface.APC_BUTTON_A_B, i, track.doesExist () && !"AB".equals (track.getCrossfadeMode ()) ? "A".equals (track.getCrossfadeMode ()) ? ColorManager.BUTTON_STATE_ON : APCColors.BUTTON_STATE_BLINK : ColorManager.BUTTON_STATE_OFF);
-                surface.updateButtonEx (APCControlSurface.APC_BUTTON_RECORD_ARM, i, track.doesExist () && track.isRecArm () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+                surface.updateButtonEx (APCControlSurface.APC_BUTTON_A_B, i, getCrossfadeButtonColor (track, trackExists));
+                surface.updateButtonEx (APCControlSurface.APC_BUTTON_RECORD_ARM, i, trackExists && track.isRecArm () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
             }
             else
             {
                 if (isShift)
-                    surface.updateButtonEx (APCControlSurface.APC_BUTTON_RECORD_ARM, i, track.doesExist () && !"AB".equals (track.getCrossfadeMode ()) ? "A".equals (track.getCrossfadeMode ()) ? ColorManager.BUTTON_STATE_ON : APCColors.BUTTON_STATE_BLINK : ColorManager.BUTTON_STATE_OFF);
+                    surface.updateButtonEx (APCControlSurface.APC_BUTTON_RECORD_ARM, i, getCrossfadeButtonColor (track, trackExists));
                 else
-                    surface.updateButtonEx (APCControlSurface.APC_BUTTON_RECORD_ARM, i, track.doesExist () && track.isRecArm () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+                    surface.updateButtonEx (APCControlSurface.APC_BUTTON_RECORD_ARM, i, trackExists && track.isRecArm () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
             }
         }
         surface.updateButton (APCControlSurface.APC_BUTTON_MASTER, this.model.getMasterTrack ().isSelected () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
@@ -430,22 +435,47 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
     }
 
 
+    private static String getCrossfadeButtonColor (final ITrack track, final boolean trackExists)
+    {
+        if (!trackExists)
+            return ColorManager.BUTTON_STATE_OFF;
+
+        final String crossfadeMode = track.getCrossfadeMode ();
+        if ("AB".equals (crossfadeMode))
+            return ColorManager.BUTTON_STATE_OFF;
+
+        return "A".equals (crossfadeMode) ? ColorManager.BUTTON_STATE_ON : APCColors.BUTTON_STATE_BLINK;
+    }
+
+
+    private static boolean getMuteButtonState (final boolean isShift, final ITrack track)
+    {
+        return isShift ? track.isMonitor () : !track.isMute ();
+    }
+
+
+    private static boolean getSoloButtonState (final boolean isShift, final ITrack track)
+    {
+        return isShift ? track.isAutoMonitor () : track.isSolo ();
+    }
+
+
     private void updateMode (final Integer mode)
     {
         final APCControlSurface surface = this.getSurface ();
         final Integer m = mode == null ? surface.getModeManager ().getActiveOrTempModeId () : mode;
         this.updateIndication (m);
-        surface.updateButton (APCControlSurface.APC_BUTTON_PAN, m == Modes.MODE_PAN ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+        surface.updateButton (APCControlSurface.APC_BUTTON_PAN, Modes.MODE_PAN.equals (m) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
         if (surface.isMkII ())
         {
-            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_A, m == Modes.MODE_SEND1 || m == Modes.MODE_SEND3 || m == Modes.MODE_SEND5 || m == Modes.MODE_SEND7 ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
-            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_B, m == Modes.MODE_SEND2 || m == Modes.MODE_SEND4 || m == Modes.MODE_SEND6 || m == Modes.MODE_SEND8 ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_A, Modes.MODE_SEND1.equals (m) || Modes.MODE_SEND3.equals (m) || Modes.MODE_SEND5.equals (m) || Modes.MODE_SEND7.equals (m) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_B, Modes.MODE_SEND2.equals (m) || Modes.MODE_SEND4.equals (m) || Modes.MODE_SEND6.equals (m) || Modes.MODE_SEND8.equals (m) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
         }
         else
         {
-            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_A, m == Modes.MODE_SEND1 || m == Modes.MODE_SEND4 || m == Modes.MODE_SEND7 ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
-            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_B, m == Modes.MODE_SEND2 || m == Modes.MODE_SEND5 || m == Modes.MODE_SEND8 ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
-            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_C, m == Modes.MODE_SEND3 || m == Modes.MODE_SEND6 ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_A, Modes.MODE_SEND1.equals (m) || Modes.MODE_SEND4.equals (m) || Modes.MODE_SEND7.equals (m) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_B, Modes.MODE_SEND2.equals (m) || Modes.MODE_SEND5.equals (m) || Modes.MODE_SEND8.equals (m) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButton (APCControlSurface.APC_BUTTON_SEND_C, Modes.MODE_SEND3.equals (m) || Modes.MODE_SEND6.equals (m) ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
         }
     }
 
@@ -462,7 +492,7 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
         {
 
             final Integer deviceKnobCommand = Integer.valueOf (Commands.CONT_COMMAND_DEVICE_KNOB1.intValue () + i);
-            if (!((DeviceKnobRowCommand) view.getContinuousCommand (deviceKnobCommand)).isKnobMoving ())
+            if (!((DeviceParamsKnobRowCommand<?, ?>) view.getContinuousCommand (deviceKnobCommand)).isKnobMoving ())
                 surface.setLED (APCControlSurface.APC_KNOB_DEVICE_KNOB_1 + i, parameterBank.getItem (i).getValue ());
         }
     }
@@ -472,20 +502,17 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
     @Override
     protected void updateIndication (final Integer mode)
     {
-        if (mode == this.currentMode)
-            return;
-        this.currentMode = mode;
-
         final ITrackBank tb = this.model.getTrackBank ();
         final ITrackBank tbe = this.model.getEffectTrackBank ();
         final APCControlSurface surface = this.getSurface ();
         final boolean isSession = surface.getViewManager ().isActiveView (Views.VIEW_SESSION);
         final boolean isEffect = this.model.isEffectTrackBankActive ();
         final boolean isPan = Modes.MODE_PAN.equals (mode);
+        final boolean isShift = surface.isShiftPressed ();
 
-        tb.setIndication (!isEffect && isSession);
+        tb.setIndication (!isEffect && (isSession || isShift));
         if (tbe != null)
-            tbe.setIndication (isEffect && isSession);
+            tbe.setIndication (isEffect && (isSession || isShift));
 
         final ICursorDevice cursorDevice = this.model.getCursorDevice ();
         final IParameterBank parameterBank = cursorDevice.getParameterBank ();
@@ -496,7 +523,7 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
             track.setPanIndication (!isEffect && isPan);
             final ISendBank sendBank = track.getSendBank ();
             for (int j = 0; j < 8; j++)
-                sendBank.getItem (j).setIndication (!isEffect && (mode == Modes.MODE_SEND1 && j == 0 || mode == Modes.MODE_SEND2 && j == 1 || mode == Modes.MODE_SEND3 && j == 2 || mode == Modes.MODE_SEND4 && j == 3 || mode == Modes.MODE_SEND5 && j == 4 || mode == Modes.MODE_SEND6 && j == 5 || mode == Modes.MODE_SEND7 && j == 6 || mode == Modes.MODE_SEND8 && j == 7));
+                sendBank.getItem (j).setIndication (!isEffect && (Modes.MODE_SEND1.equals (mode) && j == 0 || Modes.MODE_SEND2.equals (mode) && j == 1 || Modes.MODE_SEND3.equals (mode) && j == 2 || Modes.MODE_SEND4.equals (mode) && j == 3 || Modes.MODE_SEND5.equals (mode) && j == 4 || Modes.MODE_SEND6.equals (mode) && j == 5 || Modes.MODE_SEND7.equals (mode) && j == 6 || Modes.MODE_SEND8.equals (mode) && j == 7));
 
             if (tbe != null)
             {
@@ -513,10 +540,9 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
     /**
      * Handle a track selection change.
      *
-     * @param index The index of the track
      * @param isSelected Has the track been selected?
      */
-    private void handleTrackChange (final int index, final boolean isSelected)
+    private void handleTrackChange (final boolean isSelected)
     {
         if (!isSelected)
             return;
@@ -538,7 +564,7 @@ public class APCControllerSetup extends AbstractControllerSetup<APCControlSurfac
             viewManager.getActiveView ().updateNoteMapping ();
 
         // Reset drum octave because the drum pad bank is also reset
-        this.scales.setDrumOctave (0);
+        this.scales.resetDrumOctave ();
         if (viewManager.isActiveView (Views.VIEW_DRUM))
             viewManager.getView (Views.VIEW_DRUM).updateNoteMapping ();
     }

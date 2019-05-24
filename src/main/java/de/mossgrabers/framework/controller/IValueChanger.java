@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller;
@@ -21,11 +21,27 @@ public interface IValueChanger
 
 
     /**
+     * Set the upper bound.
+     *
+     * @param upperBound The new upper bound
+     */
+    void setUpperBound (int upperBound);
+
+
+    /**
      * Get the value for de-/incrementing values.
      *
      * @return The value
      */
-    int getFractionValue ();
+    double getFractionValue ();
+
+
+    /**
+     * Set the fraction value for relative change.
+     *
+     * @param fractionValue The fraction value
+     */
+    void setFractionValue (double fractionValue);
 
 
     /**
@@ -34,6 +50,14 @@ public interface IValueChanger
      * @return The value
      */
     double getSlowFractionValue ();
+
+
+    /**
+     * Set the slow fraction value for relative change.
+     *
+     * @param slowFractionValue The slow fraction value
+     */
+    void setSlowFractionValue (double slowFractionValue);
 
 
     /**

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mcu;
@@ -8,6 +8,7 @@ import de.mossgrabers.framework.configuration.AbstractConfiguration;
 import de.mossgrabers.framework.configuration.IEnumSetting;
 import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.IValueChanger;
+import de.mossgrabers.framework.daw.IHost;
 
 import java.util.Arrays;
 
@@ -20,27 +21,27 @@ import java.util.Arrays;
 public class MCUConfiguration extends AbstractConfiguration
 {
     /** Zoom state. */
-    public static final Integer    ZOOM_STATE                  = Integer.valueOf (30);
+    public static final Integer    ZOOM_STATE                  = Integer.valueOf (50);
     /** Display mode tempo or ticks. */
-    public static final Integer    DISPLAY_MODE_TICKS_OR_TEMPO = Integer.valueOf (31);
+    public static final Integer    DISPLAY_MODE_TICKS_OR_TEMPO = Integer.valueOf (51);
     /** Has a display. */
-    public static final Integer    HAS_DISPLAY1                = Integer.valueOf (32);
+    public static final Integer    HAS_DISPLAY1                = Integer.valueOf (52);
     /** Has a second display. */
-    public static final Integer    HAS_DISPLAY2                = Integer.valueOf (33);
+    public static final Integer    HAS_DISPLAY2                = Integer.valueOf (53);
     /** Has a segment display. */
-    public static final Integer    HAS_SEGMENT_DISPLAY         = Integer.valueOf (34);
+    public static final Integer    HAS_SEGMENT_DISPLAY         = Integer.valueOf (54);
     /** Has an assignment display. */
-    public static final Integer    HAS_ASSIGNMENT_DISPLAY      = Integer.valueOf (35);
+    public static final Integer    HAS_ASSIGNMENT_DISPLAY      = Integer.valueOf (55);
     /** Has motor faders. */
-    public static final Integer    HAS_MOTOR_FADERS            = Integer.valueOf (36);
+    public static final Integer    HAS_MOTOR_FADERS            = Integer.valueOf (56);
     /** Display track names in 1st display. */
-    public static final Integer    DISPLAY_TRACK_NAMES         = Integer.valueOf (37);
+    public static final Integer    DISPLAY_TRACK_NAMES         = Integer.valueOf (57);
     /** Replace the vertical zoom withmode change. */
-    public static final Integer    USE_VERT_ZOOM_FOR_MODES     = Integer.valueOf (38);
+    public static final Integer    USE_VERT_ZOOM_FOR_MODES     = Integer.valueOf (58);
     /** Use the faders like the editing knobs. */
-    public static final Integer    USE_FADERS_AS_KNOBS         = Integer.valueOf (39);
+    public static final Integer    USE_FADERS_AS_KNOBS         = Integer.valueOf (59);
     /** Select the channel when touching it's fader. */
-    private static final Integer   TOUCH_CHANNEL               = Integer.valueOf (40);
+    private static final Integer   TOUCH_CHANNEL               = Integer.valueOf (60);
 
     /** Use a Function button to switch to previous mode. */
     public static final int        FOOTSWITCH_2_PREV_MODE      = 15;
@@ -131,11 +132,12 @@ public class MCUConfiguration extends AbstractConfiguration
     /**
      * Constructor.
      *
+     * @param host The DAW host
      * @param valueChanger The value changer
      */
-    public MCUConfiguration (final IValueChanger valueChanger)
+    public MCUConfiguration (final IHost host, final IValueChanger valueChanger)
     {
-        super (valueChanger);
+        super (host, valueChanger);
         Arrays.fill (this.assignableFunctions, 0);
     }
 

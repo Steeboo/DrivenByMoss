@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode;
@@ -35,7 +35,7 @@ public class MarkersMode extends BaseMode
         "Launch",
     };
 
-    private boolean                actionModeLaunch = false;
+    private boolean                actionModeLaunch = true;
 
 
     /**
@@ -46,7 +46,7 @@ public class MarkersMode extends BaseMode
      */
     public MarkersMode (final PushControlSurface surface, final IModel model)
     {
-        super (surface, model);
+        super ("Marker", surface, model);
     }
 
 
@@ -165,5 +165,13 @@ public class MarkersMode extends BaseMode
         final boolean canEditMarkers = this.model.getHost ().canEditMarkers ();
         for (int i = 0; i < 8; i++)
             this.surface.updateButton (102 + i, canEditMarkers && !EDIT_MENU[i].isEmpty () ? AbstractMode.BUTTON_COLOR2_ON : AbstractMode.BUTTON_COLOR_OFF);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected IMarkerBank getBank ()
+    {
+        return this.model.getMarkerBank ();
     }
 }

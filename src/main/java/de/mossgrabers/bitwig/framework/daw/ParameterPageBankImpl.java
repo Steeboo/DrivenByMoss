@@ -1,11 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
 
 import de.mossgrabers.framework.daw.IParameterPageBank;
-import de.mossgrabers.framework.daw.ItemSelectionObserver;
+import de.mossgrabers.framework.observer.ItemSelectionObserver;
 
 import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 import com.bitwig.extension.controller.api.SettableIntegerValue;
@@ -66,13 +66,30 @@ public class ParameterPageBankImpl implements IParameterPageBank
     @Override
     public boolean canScrollBackwards ()
     {
-        return this.getSelectedItemPosition () > 0;
+        return this.canScrollPageBackwards ();
     }
 
 
     /** {@inheritDoc} */
     @Override
     public boolean canScrollForwards ()
+    {
+        return this.getSelectedItemPosition () < this.pageNames.size ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean canScrollPageBackwards ()
+    {
+        final int selectedItemPosition = this.getSelectedItemPosition ();
+        return selectedItemPosition > 0;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean canScrollPageForwards ()
     {
         final int sel = this.getSelectedItemPosition ();
         final int end = sel / this.pageSize * this.pageSize + this.pageSize;
@@ -100,7 +117,7 @@ public class ParameterPageBankImpl implements IParameterPageBank
 
     /** {@inheritDoc} */
     @Override
-    public void scrollPageBackwards ()
+    public void selectPreviousPage ()
     {
         final SettableIntegerValue index = this.remoteControls.selectedPageIndex ();
         index.set (Math.max (index.get () - this.getPageSize (), 0));
@@ -109,7 +126,7 @@ public class ParameterPageBankImpl implements IParameterPageBank
 
     /** {@inheritDoc} */
     @Override
-    public void scrollPageForwards ()
+    public void selectNextPage ()
     {
         final SettableIntegerValue index = this.remoteControls.selectedPageIndex ();
         index.set (Math.min (index.get () + this.getPageSize (), this.pageNames.size () - 1));
@@ -127,7 +144,7 @@ public class ParameterPageBankImpl implements IParameterPageBank
 
     /** {@inheritDoc} */
     @Override
-    public void scrollTo (int position, boolean adjustPage)
+    public void scrollTo (final int position, final boolean adjustPage)
     {
         // Not supported
     }
@@ -226,23 +243,7 @@ public class ParameterPageBankImpl implements IParameterPageBank
 
     /** {@inheritDoc} */
     @Override
-    public void selectPreviousPage ()
-    {
-        // Intentionally empty
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void selectNextPage ()
-    {
-        // Intentionally empty
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void selectItemAtPosition (int position)
+    public void selectItemAtPosition (final int position)
     {
         // Intentionally empty
     }

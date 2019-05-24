@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode.track;
@@ -11,7 +11,9 @@ import de.mossgrabers.framework.command.Commands;
 import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.controller.display.Display;
 import de.mossgrabers.framework.controller.display.Format;
+import de.mossgrabers.framework.daw.IBank;
 import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.daw.data.IItem;
 import de.mossgrabers.framework.daw.data.IMasterTrack;
 import de.mossgrabers.framework.daw.resource.ChannelType;
 import de.mossgrabers.framework.graphics.display.DisplayModel;
@@ -38,7 +40,7 @@ public class MasterMode extends BaseMode
      */
     public MasterMode (final PushControlSurface surface, final IModel model, final boolean isTemporary)
     {
-        super (surface, model);
+        super ("Master", surface, model);
         this.isTemporary = isTemporary;
     }
 
@@ -61,7 +63,7 @@ public class MasterMode extends BaseMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnob (final int index, final int value)
+    public void onKnobValue (final int index, final int value)
     {
         if (index == 0)
             this.model.getMasterTrack ().changeVolume (value);
@@ -72,21 +74,18 @@ public class MasterMode extends BaseMode
 
     /** {@inheritDoc} */
     @Override
-    public void onValueKnobTouch (final int index, final boolean isTouched)
+    public void onKnobTouch (final int index, final boolean isTouched)
     {
         this.isKnobTouched[index] = isTouched;
 
-        if (isTouched)
+        if (isTouched && this.surface.isDeletePressed ())
         {
-            if (this.surface.isDeletePressed ())
-            {
-                this.surface.setButtonConsumed (this.surface.getDeleteButtonId ());
-                if (index == 0)
-                    this.model.getMasterTrack ().resetVolume ();
-                else if (index == 1)
-                    this.model.getMasterTrack ().resetPan ();
-                return;
-            }
+            this.surface.setButtonConsumed (this.surface.getDeleteButtonId ());
+            if (index == 0)
+                this.model.getMasterTrack ().resetVolume ();
+            else if (index == 1)
+                this.model.getMasterTrack ().resetPan ();
+            return;
         }
 
         if (index == 0)
@@ -174,6 +173,10 @@ public class MasterMode extends BaseMode
             case 7:
                 this.model.getProject ().next ();
                 break;
+
+            default:
+                // Not used
+                break;
         }
     }
 
@@ -235,10 +238,10 @@ public class MasterMode extends BaseMode
         if (muteState)
         {
             if (!master.isMute ())
-                color = this.isPush2 ? PushColors.PUSH2_COLOR2_YELLOW_HI : PushColors.PUSH1_COLOR2_YELLOW_HI;
+                color = PushColors.PUSH1_COLOR2_YELLOW_HI;
         }
         else
-            color = master.isSolo () ? this.isPush2 ? PushColors.PUSH2_COLOR2_BLUE_HI : PushColors.PUSH1_COLOR2_BLUE_HI : this.isPush2 ? PushColors.PUSH2_COLOR2_GREY_LO : PushColors.PUSH1_COLOR2_GREY_LO;
+            color = master.isSolo () ? PushColors.PUSH1_COLOR2_BLUE_HI : PushColors.PUSH1_COLOR2_GREY_LO;
 
         this.surface.updateButton (102, color);
         for (int i = 1; i < 8; i++)
@@ -262,5 +265,13 @@ public class MasterMode extends BaseMode
         final IMasterTrack mt = this.model.getMasterTrack ();
         mt.setVolumeIndication (enable);
         mt.setPanIndication (enable);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected IBank<? extends IItem> getBank ()
+    {
+        return null;
     }
 }

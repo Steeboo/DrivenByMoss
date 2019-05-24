@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.beatstep.view;
@@ -15,6 +15,7 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractView;
 import de.mossgrabers.framework.view.View;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -24,6 +25,16 @@ import de.mossgrabers.framework.view.ViewManager;
  */
 public class ShiftView extends AbstractView<BeatstepControlSurface, BeatstepConfiguration> implements BeatstepView
 {
+    private static final Integer []                                    VIEWS = new Integer []
+    {
+        Views.VIEW_TRACK,
+        Views.VIEW_DEVICE,
+        Views.VIEW_PLAY,
+        Views.VIEW_DRUM,
+        Views.VIEW_SEQUENCER,
+        Views.VIEW_SESSION
+    };
+
     private PlayCommand<BeatstepControlSurface, BeatstepConfiguration> playCommand;
 
 
@@ -131,7 +142,7 @@ public class ShiftView extends AbstractView<BeatstepControlSurface, BeatstepConf
                     return;
 
                 final ViewManager viewManager = this.surface.getViewManager ();
-                final Integer viewId = Integer.valueOf (viewIndex);
+                final Integer viewId = VIEWS[viewIndex];
                 if (this.surface.isPro ())
                     viewManager.setActiveView (viewId);
                 else

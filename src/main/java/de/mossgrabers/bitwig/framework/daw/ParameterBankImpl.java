@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
@@ -7,6 +7,7 @@ package de.mossgrabers.bitwig.framework.daw;
 import de.mossgrabers.bitwig.framework.daw.data.ParameterImpl;
 import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.daw.AbstractBank;
+import de.mossgrabers.framework.daw.IHost;
 import de.mossgrabers.framework.daw.IParameterBank;
 import de.mossgrabers.framework.daw.IParameterPageBank;
 import de.mossgrabers.framework.daw.data.IItem;
@@ -31,14 +32,15 @@ public class ParameterBankImpl extends AbstractBank<IParameter> implements IPara
     /**
      * Constructor.
      *
+     * @param host The DAW host
      * @param valueChanger The value changer
      * @param pageBank The page bank
      * @param remoteControlsPage The remote controls bank
      * @param numParams The number of parameters in the page of the bank
      */
-    public ParameterBankImpl (final IValueChanger valueChanger, final IParameterPageBank pageBank, final CursorRemoteControlsPage remoteControlsPage, final int numParams)
+    public ParameterBankImpl (final IHost host, final IValueChanger valueChanger, final IParameterPageBank pageBank, final CursorRemoteControlsPage remoteControlsPage, final int numParams)
     {
-        super (numParams);
+        super (host, numParams);
         this.pageBank = pageBank;
 
         this.valueChanger = valueChanger;
@@ -82,7 +84,7 @@ public class ParameterBankImpl extends AbstractBank<IParameter> implements IPara
 
     /** {@inheritDoc} */
     @Override
-    public boolean canScrollBackwards ()
+    public boolean canScrollPageBackwards ()
     {
         return this.remoteControls.hasPrevious ().get ();
     }
@@ -90,7 +92,7 @@ public class ParameterBankImpl extends AbstractBank<IParameter> implements IPara
 
     /** {@inheritDoc} */
     @Override
-    public boolean canScrollForwards ()
+    public boolean canScrollPageForwards ()
     {
         return this.remoteControls.hasNext ().get ();
     }
@@ -114,19 +116,33 @@ public class ParameterBankImpl extends AbstractBank<IParameter> implements IPara
 
     /** {@inheritDoc} */
     @Override
-    public void scrollPageBackwards ()
+    public void selectPreviousPage ()
     {
-        final SettableIntegerValue index = this.remoteControls.selectedPageIndex ();
-        index.set (Math.max (index.get () - this.getPageSize (), 0));
+        this.remoteControls.selectPreviousPage (false);
     }
 
 
     /** {@inheritDoc} */
     @Override
-    public void scrollPageForwards ()
+    public void selectNextPage ()
     {
-        final SettableIntegerValue index = this.remoteControls.selectedPageIndex ();
-        index.set (Math.min (index.get () + this.getPageSize (), this.pageBank.getItemCount () - 1));
+        this.remoteControls.selectNextPage (false);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void selectPreviousItem ()
+    {
+        this.remoteControls.selectPrevious ();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void selectNextItem ()
+    {
+        this.remoteControls.selectNext ();
     }
 
 
@@ -141,7 +157,7 @@ public class ParameterBankImpl extends AbstractBank<IParameter> implements IPara
 
     /** {@inheritDoc} */
     @Override
-    public void scrollTo (int position, boolean adjustPage)
+    public void scrollTo (final int position, final boolean adjustPage)
     {
         // Not supported
     }

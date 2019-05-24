@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.beatstep;
@@ -7,6 +7,7 @@ package de.mossgrabers.controller.beatstep;
 import de.mossgrabers.framework.configuration.AbstractConfiguration;
 import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.IValueChanger;
+import de.mossgrabers.framework.daw.IHost;
 
 
 /**
@@ -22,12 +23,13 @@ public class BeatstepConfiguration extends AbstractConfiguration
     /**
      * Constructor.
      *
+     * @param host The DAW host
      * @param valueChanger The value changer
      * @param isPro Is Pro or MkII?
      */
-    public BeatstepConfiguration (final IValueChanger valueChanger, final boolean isPro)
+    public BeatstepConfiguration (final IHost host, final IValueChanger valueChanger, final boolean isPro)
     {
-        super (valueChanger);
+        super (host, valueChanger);
         this.isPro = isPro;
     }
 

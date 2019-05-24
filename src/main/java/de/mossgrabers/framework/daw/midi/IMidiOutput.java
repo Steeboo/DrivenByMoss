@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.daw.midi;
@@ -47,6 +47,25 @@ public interface IMidiOutput
      * @param velocity The velocity
      */
     void sendNoteEx (int channel, int note, int velocity);
+
+
+    /**
+     * Send polyphonic aftertouch to the output on midi channel 1.
+     *
+     * @param data1 First data byte
+     * @param data2 Second data byte
+     */
+    void sendPolyphonicAftertouch (int data1, int data2);
+
+
+    /**
+     * Send polyphonic aftertouch to the output on the given midi channel.
+     *
+     * @param channel The midi channel
+     * @param data1 First data byte
+     * @param data2 Second data byte
+     */
+    void sendPolyphonicAftertouch (int channel, int data1, int data2);
 
 
     /**
@@ -101,10 +120,4 @@ public interface IMidiOutput
      * @param data The data to send, formatted as a hex string, e.g. F0 7E 7F 06 01 F7
      */
     void sendSysex (String data);
-
-
-    /**
-     * Sends an identity request to the controller which is connected to this output.
-     */
-    void sendIdentityRequest ();
 }

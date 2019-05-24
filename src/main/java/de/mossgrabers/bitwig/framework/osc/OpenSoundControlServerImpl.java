@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.osc;
@@ -54,7 +54,9 @@ public class OpenSoundControlServerImpl implements IOpenSoundControlServer
         {
             this.sendMessage (message);
             pos++;
-            if (pos > 1000)
+            // We cannot get the exact size of the message due to the API, so let's try to stay
+            // below 64K, which is the maximum of an UDP message
+            if (pos > 100)
             {
                 pos = 0;
                 this.connection.endBundle ();

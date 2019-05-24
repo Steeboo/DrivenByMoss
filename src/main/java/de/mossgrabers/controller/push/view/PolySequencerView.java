@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.view;
@@ -15,6 +15,7 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractPlayView;
 import de.mossgrabers.framework.view.AbstractSequencerView;
 import de.mossgrabers.framework.view.TransposeView;
+import de.mossgrabers.framework.view.Views;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -59,10 +60,7 @@ public class PolySequencerView extends AbstractSequencerView<PushControlSurface,
         if (buttonID == PushControlSurface.PUSH_BUTTON_REPEAT)
             return this.model.getHost ().hasRepeat ();
 
-        if (this.surface.getConfiguration ().isPush2 () && buttonID == PushControlSurface.PUSH_BUTTON_USER_MODE)
-            return false;
-
-        return true;
+        return !this.surface.getConfiguration ().isPush2 () || buttonID != PushControlSurface.PUSH_BUTTON_USER_MODE;
     }
 
 
@@ -229,7 +227,7 @@ public class PolySequencerView extends AbstractSequencerView<PushControlSurface,
     @Override
     public void updateNoteMapping ()
     {
-        int [] matrix = this.scales.getNoteMatrix ();
+        final int [] matrix = this.scales.getNoteMatrix ();
         for (int i = this.scales.getStartNote () + this.sequencerSteps; i < this.scales.getEndNote (); i++)
             matrix[i] = -1;
         this.delayedUpdateNoteMapping (matrix);

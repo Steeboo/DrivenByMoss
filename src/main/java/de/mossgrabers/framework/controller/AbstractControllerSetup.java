@@ -1,10 +1,9 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller;
 
-import de.mossgrabers.controller.maschine.mikro.mk3.mode.Modes;
 import de.mossgrabers.framework.command.core.ContinuousCommand;
 import de.mossgrabers.framework.command.core.TriggerCommand;
 import de.mossgrabers.framework.configuration.AbstractConfiguration;
@@ -13,6 +12,7 @@ import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.daw.IHost;
 import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.view.View;
 
@@ -101,8 +101,7 @@ public abstract class AbstractControllerSetup<S extends IControlSurface<C>, C ex
     @Override
     public void init ()
     {
-        this.configuration.init (this.settings);
-
+        this.initConfiguration ();
         this.createScales ();
         this.createModel ();
         this.createSurface ();
@@ -111,9 +110,8 @@ public abstract class AbstractControllerSetup<S extends IControlSurface<C>, C ex
         this.createViews ();
         this.registerTriggerCommands ();
         this.registerContinuousCommands ();
-        this.model.ensureClip ();
-
-        this.host.println ("Initialized.");
+        if (this.model != null)
+            this.model.ensureClip ();
     }
 
 
@@ -135,6 +133,15 @@ public abstract class AbstractControllerSetup<S extends IControlSurface<C>, C ex
     {
         for (final S surface: this.surfaces)
             surface.flush ();
+    }
+
+
+    /**
+     * Initialize the configuration settings.
+     */
+    protected void initConfiguration ()
+    {
+        this.configuration.init (this.settings);
     }
 
 
@@ -235,6 +242,53 @@ public abstract class AbstractControllerSetup<S extends IControlSurface<C>, C ex
 
 
     /**
+     * Register a (global) trigger command for all views and assign it to a MIDI CC.
+     *
+     * @param commandID The ID of the command to register
+     * @param midiCC The midi CC
+     * @param midiChannel The midi channel to assign to
+     * @param command The command to register
+     */
+    protected void addTriggerCommand (final Integer commandID, final int midiCC, final int midiChannel, final TriggerCommand command)
+    {
+        this.addTriggerCommand (commandID, midiCC, midiChannel, command, 0);
+    }
+
+
+    /**
+     * Register a (global) trigger command for all views and assign it to a MIDI CC.
+     *
+     * @param commandID The ID of the command to register
+     * @param midiCC The midi CC
+     * @param midiChannel The midi channel to assign to
+     * @param command The command to register
+     * @param deviceIndex The index of the device
+     */
+    protected void addTriggerCommand (final Integer commandID, final int midiCC, final int midiChannel, final TriggerCommand command, final int deviceIndex)
+    {
+        final S surface = this.surfaces.get (deviceIndex);
+        surface.getViewManager ().registerTriggerCommand (commandID, command);
+        surface.assignTriggerCommand (midiCC, midiChannel, commandID);
+    }
+
+
+    /**
+     * Register a (global) continuous command for all views and assign it to a MIDI CC.
+     *
+     * @param commandID The ID of the command to register
+     * @param midiCC The midi CC
+     * @param midiChannel The midi channel to assign to
+     * @param command The command to register
+     */
+    protected void addContinuousCommand (final Integer commandID, final int midiCC, final int midiChannel, final ContinuousCommand command)
+    {
+        final S surface = this.surfaces.get (0);
+        surface.getViewManager ().registerContinuousCommand (commandID, command);
+        surface.assignContinuousCommand (midiCC, midiChannel, commandID);
+    }
+
+
+    /**
      * Register a (global) continuous command for all views and assign it to a MIDI CC.
      *
      * @param commandID The ID of the command to register
@@ -302,7 +356,7 @@ public abstract class AbstractControllerSetup<S extends IControlSurface<C>, C ex
     /**
      * Update the active views note mapping.
      */
-    private void updateViewNoteMapping ()
+    protected void updateViewNoteMapping ()
     {
         for (final S surface: this.surfaces)
         {

@@ -1,10 +1,9 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.beatstep;
 
-import de.mossgrabers.controller.beatstep.command.continuous.BeatstepPlayPositionCommand;
 import de.mossgrabers.controller.beatstep.command.continuous.KnobRowViewCommand;
 import de.mossgrabers.controller.beatstep.command.trigger.StepCommand;
 import de.mossgrabers.controller.beatstep.controller.BeatstepColors;
@@ -17,9 +16,9 @@ import de.mossgrabers.controller.beatstep.view.SequencerView;
 import de.mossgrabers.controller.beatstep.view.SessionView;
 import de.mossgrabers.controller.beatstep.view.ShiftView;
 import de.mossgrabers.controller.beatstep.view.TrackView;
-import de.mossgrabers.controller.beatstep.view.Views;
 import de.mossgrabers.framework.command.Commands;
 import de.mossgrabers.framework.command.aftertouch.AftertouchAbstractPlayViewCommand;
+import de.mossgrabers.framework.command.continuous.PlayPositionCommand;
 import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.AbstractControllerSetup;
 import de.mossgrabers.framework.controller.ISetupFactory;
@@ -40,6 +39,7 @@ import de.mossgrabers.framework.daw.midi.IMidiOutput;
 import de.mossgrabers.framework.daw.midi.INoteInput;
 import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -135,7 +135,7 @@ public class BeatstepControllerSetup extends AbstractControllerSetup<BeatstepCon
         this.colorManager = new ColorManager ();
         BeatstepColors.addColors (this.colorManager);
         this.valueChanger = new Relative3ValueChanger (128, 1, 0.5);
-        this.configuration = new BeatstepConfiguration (this.valueChanger, isPro);
+        this.configuration = new BeatstepConfiguration (host, this.valueChanger, isPro);
     }
 
 
@@ -163,7 +163,7 @@ public class BeatstepControllerSetup extends AbstractControllerSetup<BeatstepCon
     {
         final ModelSetup ms = new ModelSetup ();
         this.model = this.factory.createModel (this.colorManager, this.valueChanger, this.scales, ms);
-        this.model.getTrackBank ().addSelectionObserver (this::handleTrackChange);
+        this.model.getTrackBank ().addSelectionObserver ( (index, value) -> this.handleTrackChange (value));
     }
 
 
@@ -197,7 +197,7 @@ public class BeatstepControllerSetup extends AbstractControllerSetup<BeatstepCon
             input.createNoteInput ("Drums", "99????", "89????");
         }
 
-        final BeatstepControlSurface surface = new BeatstepControlSurface (this.model.getHost (), this.colorManager, this.configuration, output, input, this.isPro);
+        final BeatstepControlSurface surface = new BeatstepControlSurface (this.host, this.colorManager, this.configuration, output, input, this.isPro);
         this.surfaces.add (surface);
         surface.setDisplay (new DummyDisplay (this.host));
     }
@@ -258,7 +258,7 @@ public class BeatstepControllerSetup extends AbstractControllerSetup<BeatstepCon
             this.addContinuousCommand (Integer.valueOf (Commands.CONT_COMMAND_KNOB1.intValue () + i), BeatstepControlSurface.BEATSTEP_KNOB_1 + i, new KnobRowViewCommand (i, this.model, surface));
             this.addContinuousCommand (Integer.valueOf (Commands.CONT_COMMAND_DEVICE_KNOB1.intValue () + i), BeatstepControlSurface.BEATSTEP_KNOB_9 + i, new KnobRowViewCommand (i + 8, this.model, surface));
         }
-        this.addContinuousCommand (Commands.CONT_COMMAND_MASTER_KNOB, BeatstepControlSurface.BEATSTEP_KNOB_MAIN, new BeatstepPlayPositionCommand (this.model, surface));
+        this.addContinuousCommand (Commands.CONT_COMMAND_MASTER_KNOB, BeatstepControlSurface.BEATSTEP_KNOB_MAIN, new PlayPositionCommand<> (this.model, surface));
         final PlayView playView = (PlayView) viewManager.getView (Views.VIEW_PLAY);
         playView.registerAftertouchCommand (new AftertouchAbstractPlayViewCommand<> (playView, this.model, surface));
     }
@@ -326,10 +326,9 @@ public class BeatstepControllerSetup extends AbstractControllerSetup<BeatstepCon
     /**
      * Handle a track selection change.
      *
-     * @param index The index of the track
      * @param isSelected Has the track been selected?
      */
-    private void handleTrackChange (final int index, final boolean isSelected)
+    private void handleTrackChange (final boolean isSelected)
     {
         if (!isSelected)
             return;
@@ -339,7 +338,7 @@ public class BeatstepControllerSetup extends AbstractControllerSetup<BeatstepCon
             viewManager.getActiveView ().updateNoteMapping ();
 
         // Reset drum octave because the drum pad bank is also reset
-        this.scales.setDrumOctave (0);
+        this.scales.resetDrumOctave ();
         if (viewManager.isActiveView (Views.VIEW_DRUM))
             viewManager.getView (Views.VIEW_DRUM).updateNoteMapping ();
     }

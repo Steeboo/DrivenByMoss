@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw.data;
@@ -7,6 +7,7 @@ package de.mossgrabers.bitwig.framework.daw.data;
 import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.daw.data.AbstractItemImpl;
 import de.mossgrabers.framework.daw.data.IParameter;
+import de.mossgrabers.framework.observer.IValueObserver;
 
 import com.bitwig.extension.controller.api.Parameter;
 
@@ -18,11 +19,8 @@ import com.bitwig.extension.controller.api.Parameter;
  */
 public class ParameterImpl extends AbstractItemImpl implements IParameter
 {
-    private IValueChanger   valueChanger;
-    private final Parameter parameter;
-
-    private int             value;
-    private int             modulatedValue;
+    private final IValueChanger valueChanger;
+    private final Parameter     parameter;
 
 
     /**
@@ -39,13 +37,11 @@ public class ParameterImpl extends AbstractItemImpl implements IParameter
         this.valueChanger = valueChanger;
         this.parameter = parameter;
 
-        final int maxParameterValue = this.valueChanger.getUpperBound ();
-
         parameter.exists ().markInterested ();
         parameter.name ().markInterested ();
         parameter.displayedValue ().markInterested ();
-        parameter.value ().addValueObserver (maxParameterValue, this::handleValue);
-        parameter.modulatedValue ().addValueObserver (maxParameterValue, this::handleModulatedValue);
+        parameter.value ().markInterested ();
+        parameter.modulatedValue ().markInterested ();
     }
 
 
@@ -95,6 +91,14 @@ public class ParameterImpl extends AbstractItemImpl implements IParameter
 
     /** {@inheritDoc} */
     @Override
+    public void addNameObserver (final IValueObserver<String> observer)
+    {
+        this.parameter.name ().addValueObserver (observer::update);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
     public String getDisplayedValue ()
     {
         return this.parameter.displayedValue ().get ();
@@ -113,15 +117,15 @@ public class ParameterImpl extends AbstractItemImpl implements IParameter
     @Override
     public int getValue ()
     {
-        return this.value;
+        return this.valueChanger.fromNormalizedValue (this.parameter.value ().get ());
     }
 
 
     /** {@inheritDoc} */
     @Override
-    public void setValue (final double value)
+    public void setValue (final int value)
     {
-        this.parameter.set (Double.valueOf (value), Integer.valueOf (this.valueChanger.getUpperBound ()));
+        this.parameter.set (Integer.valueOf (value), Integer.valueOf (this.valueChanger.getUpperBound ()));
     }
 
 
@@ -137,7 +141,7 @@ public class ParameterImpl extends AbstractItemImpl implements IParameter
     @Override
     public int getModulatedValue ()
     {
-        return this.modulatedValue;
+        return this.valueChanger.fromNormalizedValue (this.parameter.modulatedValue ().get ());
     }
 
 
@@ -162,17 +166,5 @@ public class ParameterImpl extends AbstractItemImpl implements IParameter
     public void touchValue (final boolean isBeingTouched)
     {
         this.parameter.touch (isBeingTouched);
-    }
-
-
-    private void handleValue (final int value)
-    {
-        this.value = value;
-    }
-
-
-    private void handleModulatedValue (final int modulatedValue)
-    {
-        this.modulatedValue = modulatedValue;
     }
 }

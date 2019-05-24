@@ -1,14 +1,17 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.configuration;
 
 import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.controller.color.ColorEx;
+import de.mossgrabers.framework.daw.IHost;
+import de.mossgrabers.framework.observer.SettingObserver;
 import de.mossgrabers.framework.scale.Scale;
 import de.mossgrabers.framework.scale.ScaleLayout;
 import de.mossgrabers.framework.scale.Scales;
+import de.mossgrabers.framework.view.Views;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,6 +84,12 @@ public abstract class AbstractConfiguration implements Configuration
     public static final Integer    BROWSER_DISPLAY_FILTER7           = Integer.valueOf (27);
     /** Setting for displaying browser column 8. */
     public static final Integer    BROWSER_DISPLAY_FILTER8           = Integer.valueOf (28);
+    /** The speed of a knob. */
+    public static final Integer    KNOB_SPEED_NORMAL                 = Integer.valueOf (29);
+    /** The speed of a knob in slow mode. */
+    public static final Integer    KNOB_SPEED_SLOW                   = Integer.valueOf (30);
+
+    // Implementation IDs start at 50
 
     protected static final String  CATEGORY_DRUMS                    = "Drum Sequencer";
     protected static final String  CATEGORY_SCALES                   = "Scales";
@@ -160,7 +169,7 @@ public abstract class AbstractConfiguration implements Configuration
     }
 
     /** The names for clip lengths. */
-    public static final String []                    NEW_CLIP_LENGTH_VALUES      =
+    protected static final String []                 NEW_CLIP_LENGTH_VALUES      =
     {
         "1 Beat",
         "2 Beat",
@@ -224,11 +233,13 @@ public abstract class AbstractConfiguration implements Configuration
     };
 
     /** The Off/On option. */
-    public static final String []                    ON_OFF_OPTIONS              =
+    protected static final String []                 ON_OFF_OPTIONS              =
     {
         "Off",
         "On"
     };
+
+    protected final IHost                            host;
 
     private IEnumSetting                             scaleBaseSetting;
     private IEnumSetting                             scaleInKeySetting;
@@ -237,7 +248,6 @@ public abstract class AbstractConfiguration implements Configuration
     private IEnumSetting                             enableVUMetersSetting;
     private IEnumSetting                             displayCrossfaderSetting;
     private IEnumSetting                             flipSessionSetting;
-    private IEnumSetting                             lockFlipSessionSetting;
     private IEnumSetting                             accentActiveSetting;
     private IIntegerSetting                          accentValueSetting;
     private IIntegerSetting                          quantizeAmountSetting;
@@ -262,7 +272,7 @@ public abstract class AbstractConfiguration implements Configuration
     private boolean                                  accentActive                = false;
     /** Fixed velocity value for accent. */
     private int                                      fixedAccentValue            = 127;
-    private int                                      quantizeAmount              = 1;
+    private int                                      quantizeAmount              = 100;
     private boolean                                  flipRecord                  = false;
     private int                                      newClipLength               = 2;
     private boolean                                  autoSelectDrum              = false;
@@ -280,16 +290,22 @@ public abstract class AbstractConfiguration implements Configuration
         true,
         true
     };
+    private int                                      knobSpeedNormal             = 10;
+    private int                                      knobSpeedSlow               = 1;
 
 
     /**
      * Constructor.
      *
+     * @param host The DAW host
      * @param valueChanger The value changer
      */
-    public AbstractConfiguration (final IValueChanger valueChanger)
+    public AbstractConfiguration (final IHost host, final IValueChanger valueChanger)
     {
         this.valueChanger = valueChanger;
+
+        this.host = host;
+        Views.init (host);
     }
 
 
@@ -297,13 +313,7 @@ public abstract class AbstractConfiguration implements Configuration
     @Override
     public void addSettingObserver (final Integer settingID, final SettingObserver observer)
     {
-        Set<SettingObserver> settingObservers = this.observers.get (settingID);
-        if (settingObservers == null)
-        {
-            settingObservers = new HashSet<> ();
-            this.observers.put (settingID, settingObservers);
-        }
-        settingObservers.add (observer);
+        this.observers.computeIfAbsent (settingID, id -> new HashSet<> ()).add (observer);
     }
 
 
@@ -628,6 +638,22 @@ public abstract class AbstractConfiguration implements Configuration
     }
 
 
+    /** {@inheritDoc} */
+    @Override
+    public int getKnobSpeedNormal ()
+    {
+        return this.knobSpeedNormal;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public int getKnobSpeedSlow ()
+    {
+        return this.knobSpeedSlow;
+    }
+
+
     /**
      * Activate the scale setting.
      *
@@ -773,8 +799,8 @@ public abstract class AbstractConfiguration implements Configuration
      */
     protected void activateLockFlipSessionSetting (final ISettingsUI settingsUI)
     {
-        this.lockFlipSessionSetting = settingsUI.getEnumSetting ("Lock flip Session", CATEGORY_SESSION, ON_OFF_OPTIONS, ON_OFF_OPTIONS[0]);
-        this.lockFlipSessionSetting.addValueObserver (value -> {
+        final IEnumSetting lockFlipSessionSetting = settingsUI.getEnumSetting ("Lock flip Session", CATEGORY_SESSION, ON_OFF_OPTIONS, ON_OFF_OPTIONS[0]);
+        lockFlipSessionSetting.addValueObserver (value -> {
             this.lockFlipSession = "On".equals (value);
             this.notifyObservers (AbstractConfiguration.LOCK_FLIP_SESSION);
         });
@@ -985,6 +1011,27 @@ public abstract class AbstractConfiguration implements Configuration
 
 
     /**
+     * Activate the knob speed settings.
+     *
+     * @param settingsUI The settings
+     * @param defaultFastSpeed The default value for the fast speed (1-100)
+     */
+    protected void activateKnobSpeedSetting (final ISettingsUI settingsUI, final int defaultFastSpeed)
+    {
+        final IIntegerSetting knobSpeedNormalSetting = settingsUI.getRangeSetting ("Knob Speed Normal", CATEGORY_WORKFLOW, 1, 100, 1, "%", defaultFastSpeed);
+        knobSpeedNormalSetting.addValueObserver (value -> {
+            this.knobSpeedNormal = value.intValue () + 1;
+            this.notifyObservers (AbstractConfiguration.KNOB_SPEED_NORMAL);
+        });
+        final IIntegerSetting knobSpeedSlowSetting = settingsUI.getRangeSetting ("Knob Speed Slow", CATEGORY_WORKFLOW, 1, 100, 1, "%", 1);
+        knobSpeedSlowSetting.addValueObserver (value -> {
+            this.knobSpeedSlow = value.intValue () + 1;
+            this.notifyObservers (AbstractConfiguration.KNOB_SPEED_SLOW);
+        });
+    }
+
+
+    /**
      * Notify all observers about the change of a setting.
      *
      * @param settingID The ID of the setting, which has changed
@@ -1012,5 +1059,17 @@ public abstract class AbstractConfiguration implements Configuration
                 return i;
         }
         return 0;
+    }
+
+
+    /**
+     * Get a new clip length value string.
+     *
+     * @param index The index
+     * @return The text
+     */
+    public static String getNewClipLengthValue (final int index)
+    {
+        return NEW_CLIP_LENGTH_VALUES[index];
     }
 }

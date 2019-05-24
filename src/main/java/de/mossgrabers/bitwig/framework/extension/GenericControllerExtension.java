@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.extension;
@@ -40,7 +40,11 @@ public class GenericControllerExtension extends ControllerExtension
     public void init ()
     {
         this.setup.init ();
-        this.getHost ().scheduleTask (this.setup::startup, 1000);
+        final ControllerHost host = this.getHost ();
+        host.scheduleTask ( () -> {
+            this.setup.startup ();
+            host.println ("Running.");
+        }, 1000);
     }
 
 

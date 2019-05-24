@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc.command.trigger;
@@ -12,7 +12,8 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 
 
 /**
- * Command handle the stop button.
+ * Command handle the record button. RStart arranger record if pressed. Execute New command if
+ * shifted.
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */

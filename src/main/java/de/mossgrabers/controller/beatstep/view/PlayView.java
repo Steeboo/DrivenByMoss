@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.beatstep.view;
@@ -41,14 +41,7 @@ public class PlayView extends AbstractPlayView<BeatstepControlSurface, BeatstepC
     @Override
     public void onKnob (final int index, final int value)
     {
-        if (index < 12)
-        {
-            this.extensions.onTrackKnob (index, value);
-            return;
-        }
-
         final boolean isInc = value >= 65;
-
         switch (index)
         {
             // Chromatic
@@ -85,6 +78,11 @@ public class PlayView extends AbstractPlayView<BeatstepControlSurface, BeatstepC
                 else
                     this.scales.decOctave ();
                 this.surface.getDisplay ().notify ("Octave " + (this.scales.getOctave () > 0 ? "+" : "") + this.scales.getOctave () + " (" + this.scales.getRangeText () + ")");
+                break;
+
+            // 0-11
+            default:
+                this.extensions.onTrackKnob (index, value);
                 break;
         }
 

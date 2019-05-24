@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.launchpad.view;
@@ -14,6 +14,7 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractView;
 import de.mossgrabers.framework.view.SceneView;
 import de.mossgrabers.framework.view.ViewManager;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -150,6 +151,9 @@ public class BrowserView extends AbstractView<LaunchpadControlSurface, Launchpad
             case 41:
                 this.surface.sendMidiEvent (0x90, 84, velocity);
                 break;
+            default:
+                // Not used
+                break;
         }
 
         if (velocity == 0)
@@ -200,8 +204,6 @@ public class BrowserView extends AbstractView<LaunchpadControlSurface, Launchpad
                         browser.selectPreviousFilterItem (BrowserView.COLUMN_ORDER[col]);
                     break;
             }
-
-            return;
         }
     }
 

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.view;
@@ -9,7 +9,6 @@ import de.mossgrabers.controller.push.controller.PushControlSurface;
 import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.data.ITrack;
-import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractDrumView;
 import de.mossgrabers.framework.view.AbstractSequencerView;
@@ -84,9 +83,8 @@ public abstract class DrumViewBase extends AbstractDrumView<PushControlSurface, 
     @Override
     public void updateButtons ()
     {
-        final int octave = this.scales.getDrumOctave ();
-        this.surface.updateButton (PushControlSurface.PUSH_BUTTON_OCTAVE_UP, octave < Scales.DRUM_OCTAVE_UPPER ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
-        this.surface.updateButton (PushControlSurface.PUSH_BUTTON_OCTAVE_DOWN, octave > Scales.DRUM_OCTAVE_LOWER ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+        this.surface.updateButton (PushControlSurface.PUSH_BUTTON_OCTAVE_UP, this.scales.canScrollDrumOctaveUp () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+        this.surface.updateButton (PushControlSurface.PUSH_BUTTON_OCTAVE_DOWN, this.scales.canScrollDrumOctaveDown () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
     }
 
 

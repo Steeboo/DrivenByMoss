@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.launchpad;
@@ -32,7 +32,7 @@ public class LaunchpadControllerDefinition extends DefaultControllerDefinition
      */
     public LaunchpadControllerDefinition (final boolean isMkII)
     {
-        super ("", "Jürgen Moßgraber", "3.44", isMkII ? EXTENSION_ID_MK_II : EXTENSION_ID_PRO, isMkII ? "Launchpad MkII" : "Launchpad Pro", "Novation", 1, 1);
+        super (isMkII ? EXTENSION_ID_MK_II : EXTENSION_ID_PRO, isMkII ? "Launchpad MkII" : "Launchpad Pro", "Novation", 1, 1);
         this.isMkII = isMkII;
     }
 

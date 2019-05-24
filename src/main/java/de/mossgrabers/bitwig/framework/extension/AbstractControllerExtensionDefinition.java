@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.extension;
@@ -69,7 +69,7 @@ public abstract class AbstractControllerExtensionDefinition extends ControllerEx
     @Override
     public String getVersion ()
     {
-        return this.definition.getVersion ();
+        return this.definition.getVersion (Package.getPackage ("de.mossgrabers.framework.daw"));
     }
 
 

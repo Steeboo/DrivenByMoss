@@ -1,11 +1,12 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc.mode;
 
 import de.mossgrabers.controller.apc.controller.APCControlSurface;
 import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.daw.ITrackBank;
 import de.mossgrabers.framework.daw.data.ITrack;
 
 
@@ -28,7 +29,7 @@ public class SendMode extends BaseMode
      */
     public SendMode (final APCControlSurface surface, final IModel model, final int sendIndex)
     {
-        super (surface, model, 2, 0);
+        super ("Send " + (sendIndex + 1), surface, model, 2, 0);
         this.sendIndex = sendIndex;
     }
 
@@ -49,5 +50,13 @@ public class SendMode extends BaseMode
             return Integer.valueOf (0);
         final ITrack track = this.model.getCurrentTrackBank ().getItem (index);
         return track.doesExist () ? Integer.valueOf (track.getSendBank ().getItem (this.sendIndex).getValue ()) : null;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected ITrackBank getBank ()
+    {
+        return this.model.getCurrentTrackBank ();
     }
 }

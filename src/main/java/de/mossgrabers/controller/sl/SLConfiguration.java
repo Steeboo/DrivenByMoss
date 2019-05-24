@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.sl;
@@ -8,6 +8,7 @@ import de.mossgrabers.framework.configuration.AbstractConfiguration;
 import de.mossgrabers.framework.configuration.IEnumSetting;
 import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.IValueChanger;
+import de.mossgrabers.framework.daw.IHost;
 
 
 /**
@@ -18,9 +19,9 @@ import de.mossgrabers.framework.controller.IValueChanger;
 public class SLConfiguration extends AbstractConfiguration
 {
     /** Touchpad mode. */
-    public static final Integer    TOUCHPAD_MODE              = Integer.valueOf (30);
+    public static final Integer    TOUCHPAD_MODE              = Integer.valueOf (50);
     /** Use drum pads for mode selection. */
-    public static final Integer    DRUMPADS_AS_MODE_SELECTION = Integer.valueOf (31);
+    public static final Integer    DRUMPADS_AS_MODE_SELECTION = Integer.valueOf (51);
 
     /** Touchpad mode: Use as the crossfader. */
     public static final String     TOUCHPAD_MODE_CROSSFADER   = "Crossfader";
@@ -40,12 +41,13 @@ public class SLConfiguration extends AbstractConfiguration
     /**
      * Constructor.
      *
+     * @param host The DAW host
      * @param valueChanger The value changer
      * @param isMkII Is MkI or MkII?
      */
-    public SLConfiguration (final IValueChanger valueChanger, final boolean isMkII)
+    public SLConfiguration (final IHost host, final IValueChanger valueChanger, final boolean isMkII)
     {
-        super (valueChanger);
+        super (host, valueChanger);
         this.isMkII = isMkII;
     }
 

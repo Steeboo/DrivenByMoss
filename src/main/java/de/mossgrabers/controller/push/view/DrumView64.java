@@ -1,12 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.view;
 
 import de.mossgrabers.controller.push.PushConfiguration;
 import de.mossgrabers.controller.push.controller.PushControlSurface;
-import de.mossgrabers.controller.push.mode.Modes;
 import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.daw.ICursorDevice;
 import de.mossgrabers.framework.daw.IDrumPadBank;
@@ -15,6 +14,7 @@ import de.mossgrabers.framework.daw.ISceneBank;
 import de.mossgrabers.framework.daw.data.IDrumPad;
 import de.mossgrabers.framework.daw.data.IScene;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractDrumView64;
@@ -131,7 +131,7 @@ public class DrumView64 extends AbstractDrumView64<PushControlSurface, PushConfi
             // If the instrument of the pad was selected for editing, try to select it again
             if (isNested)
             {
-                IDrumPad selectedItem = cdDrumPadBank.getItem (playedPad % pageSize);
+                final IDrumPad selectedItem = cdDrumPadBank.getItem (playedPad % pageSize);
                 if (selectedItem != null)
                     selectedItem.enter ();
             }

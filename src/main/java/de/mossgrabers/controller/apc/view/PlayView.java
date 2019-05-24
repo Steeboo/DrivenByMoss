@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.apc.view;
@@ -67,8 +67,8 @@ public class PlayView extends AbstractPlayView<APCControlSurface, APCConfigurati
     {
         final ITrackBank tb = this.model.getCurrentTrackBank ();
         final ITrack sel = tb.getSelectedItem ();
-        this.canScrollLeft = sel != null && sel.getIndex () > 0 || tb.canScrollBackwards ();
-        this.canScrollRight = sel != null && sel.getIndex () < 7 || tb.canScrollForwards ();
+        this.canScrollLeft = sel != null && sel.getIndex () > 0 || tb.canScrollPageBackwards ();
+        this.canScrollRight = sel != null && sel.getIndex () < 7 || tb.canScrollPageForwards ();
 
         super.updateArrows ();
     }
@@ -106,6 +106,10 @@ public class PlayView extends AbstractPlayView<APCControlSurface, APCConfigurati
 
             case 4:
                 this.onOctaveDown (event);
+                break;
+
+            default:
+                // Not used
                 break;
         }
         this.updateNoteMapping ();

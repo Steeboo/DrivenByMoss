@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller.display;
@@ -128,7 +128,8 @@ public class DummyDisplay implements Display
     @Override
     public void notify (final String message)
     {
-        this.host.showNotification (message);
+        if (message != null)
+            this.host.showNotification (message);
     }
 
 

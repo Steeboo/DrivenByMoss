@@ -1,20 +1,21 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2018
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.view;
 
 import de.mossgrabers.controller.push.PushConfiguration;
 import de.mossgrabers.controller.push.controller.PushControlSurface;
-import de.mossgrabers.controller.push.mode.Modes;
 import de.mossgrabers.controller.push.mode.NoteMode;
 import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.INoteClip;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.AbstractNoteSequencerView;
 import de.mossgrabers.framework.view.AbstractSequencerView;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -43,10 +44,7 @@ public class SequencerView extends AbstractNoteSequencerView<PushControlSurface,
         if (buttonID == PushControlSurface.PUSH_BUTTON_REPEAT)
             return this.model.getHost ().hasRepeat ();
 
-        if (this.surface.getConfiguration ().isPush2 () && buttonID == PushControlSurface.PUSH_BUTTON_USER_MODE)
-            return false;
-
-        return true;
+        return !this.surface.getConfiguration ().isPush2 () || buttonID != PushControlSurface.PUSH_BUTTON_USER_MODE;
     }
 
 
@@ -108,7 +106,7 @@ public class SequencerView extends AbstractNoteSequencerView<PushControlSurface,
         if (y >= this.numSequencerRows)
             return;
 
-        // TODO Bugfix required - setStep makes Bitwig hang
+        // TODO Bugfix required: setStep makes Bitwig hang
         // https://github.com/teotigraphix/Framework4Bitwig/issues/124
         final int x = index % 8;
         final INoteClip cursorClip = this.getClip ();
