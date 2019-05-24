@@ -1,5 +1,3 @@
-﻿// Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.push.mode.track;
@@ -64,7 +62,7 @@ public abstract class AbstractTrackMode extends BaseMode
         final ITrack track = tb.getItem (index);
 
         if (event == ButtonEvent.UP)
-        {
+        {        	        	
             if (this.surface.isPressed (PushControlSurface.PUSH_BUTTON_DUPLICATE))
             {
                 this.surface.setButtonConsumed (PushControlSurface.PUSH_BUTTON_DUPLICATE);
@@ -93,13 +91,19 @@ public abstract class AbstractTrackMode extends BaseMode
                 return;
             }
 
+            if (this.surface.isShiftPressed()) {                            
+                this.model.deactivateArm();
+                track.setRecArm(true);             
+                return;   
+        	}
+
             final ITrack selTrack = tb.getSelectedItem ();
             if (selTrack != null && selTrack.getIndex () == index)
             {
                 // If it is a group display child channels of group, otherwise toggle rec arm
                 if (selTrack.isGroup ())
                     selTrack.enter ();
-                else
+                else 
                     track.toggleRecArm ();
             }
             else
@@ -134,10 +138,18 @@ public abstract class AbstractTrackMode extends BaseMode
         final PushConfiguration config = this.surface.getConfiguration ();
         if (!this.isPush2 || config.isMuteLongPressed () || config.isSoloLongPressed () || config.isMuteSoloLocked ())
         {
-            if (config.isMuteState ())
+            if (config.isMuteState ()){
+                if (this.surface.isShiftPressed()){
+                    this.model.deactivateMute();
+                }            
                 track.toggleMute ();
-            else
+            }
+            else {
+                if (this.surface.isShiftPressed()){
+                    this.model.deactivateSolo();
+                }
                 track.toggleSolo ();
+            }
             return;
         }
 

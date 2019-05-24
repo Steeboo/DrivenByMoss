@@ -33,7 +33,8 @@ public abstract class AbstractModel implements IModel
     protected IArranger          arranger;
     protected IMarkerBank        markerBank;
     protected ITrackBank         currentTrackBank;
-    protected ITrackBank         trackBank;
+    protected ITrackBank         allTracks;
+    protected ITrackBank         trackBank;    
     protected ITrackBank         effectTrackBank;
     protected IMasterTrack       masterTrack;
     protected ICursorDevice      instrumentDevice;
@@ -208,7 +209,7 @@ public abstract class AbstractModel implements IModel
         return this.currentTrackBank;
     }
 
-
+    
     /** {@inheritDoc} */
     @Override
     public ITrackBank getTrackBank ()

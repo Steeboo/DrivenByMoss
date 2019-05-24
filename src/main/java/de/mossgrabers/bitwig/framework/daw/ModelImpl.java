@@ -42,7 +42,7 @@ public class ModelImpl extends AbstractModel
     private final CursorTrack              cursorTrack;
     private final BooleanValue             masterTrackEqualsValue;
     private final Map<Integer, ISceneBank> sceneBanks = new HashMap<> (1);
-    private final TrackBank                muteSoloTrackBank;
+    private final TrackBank                allTrackBank;
 
 
     /**
@@ -99,9 +99,9 @@ public class ModelImpl extends AbstractModel
         final TrackBank effectTrackBank = controllerHost.createEffectTrackBank (numTracks, numScenes);
         this.effectTrackBank = new EffectTrackBankImpl (this.host, valueChanger, this.cursorTrack, effectTrackBank, numTracks, numScenes, this.trackBank);
 
-        this.muteSoloTrackBank = controllerHost.createTrackBank (ALL_TRACKS, 0, 0, true);
+        this.allTrackBank = controllerHost.createTrackBank (ALL_TRACKS, 0, 0, true);
         for (int i = 0; i < ALL_TRACKS; i++)
-            this.muteSoloTrackBank.getItemAt (i).solo ().markInterested ();
+            this.allTrackBank.getItemAt (i).solo ().markInterested ();
 
         final int numParams = this.modelSetup.getNumParams ();
         final int numDeviceLayers = this.modelSetup.getNumDeviceLayers ();
@@ -124,7 +124,6 @@ public class ModelImpl extends AbstractModel
 
         this.currentTrackBank = this.trackBank;
     }
-
 
     /** {@inheritDoc} */
     @Override
@@ -156,7 +155,7 @@ public class ModelImpl extends AbstractModel
     public void deactivateSolo ()
     {
         for (int i = 0; i < ALL_TRACKS; i++)
-            this.muteSoloTrackBank.getItemAt (i).solo ().set (false);
+            this.allTrackBank.getItemAt (i).solo ().set (false);
     }
 
 
@@ -165,8 +164,14 @@ public class ModelImpl extends AbstractModel
     public void deactivateMute ()
     {
         for (int i = 0; i < ALL_TRACKS; i++)
-            this.muteSoloTrackBank.getItemAt (i).mute ().set (false);
+            this.allTrackBank.getItemAt (i).mute ().set (false);
     }
+
+    
+    public void deactivateArm () {    	
+        for (int i = 0; i < ALL_TRACKS; i++)
+            this.allTrackBank.getItemAt (i).arm ().set (false);
+     }
 
 
     /** {@inheritDoc} */
