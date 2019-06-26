@@ -145,7 +145,7 @@ public class DeviceParamsMode extends BaseMode
             if (this.surface.isPressed (PushControlSurface.PUSH_BUTTON_DELETE))
             {
                 this.surface.setButtonConsumed (PushControlSurface.PUSH_BUTTON_DELETE);
-                cd.remove ();
+                cd.getDeviceBank ().getItem (index).remove ();
                 return;
             }
 
@@ -346,7 +346,7 @@ public class DeviceParamsMode extends BaseMode
         final ICursorDevice cd = this.model.getCursorDevice ();
         if (!cd.doesExist ())
         {
-            d.clear ().setBlock (1, 0, "           Select").setBlock (1, 1, "a device or press").setBlock (1, 2, "'Add Effect'...  ").allDone ();
+            d.setBlock (1, 0, "           Select").setBlock (1, 1, "a device or press").setBlock (1, 2, "'Add Effect'...  ").allDone ();
             return;
         }
 
